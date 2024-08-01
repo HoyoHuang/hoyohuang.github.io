@@ -1,0 +1,925 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="免費網頁遊戲 雙人對戰 多人對戰 派對遊戲 過年">
+    <meta name="author" content="hoyo">
+    <link rel="icon" type="image/png" href="/img/game.hoyo.idv.tw.logo-64.png">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Hoyo 遊戲平台 - 賓果">
+    <meta name="mobile-web-app-title" content="Hoyo 遊戲平台 - 賓果">
+    <meta name="format-detection" content="telephone=no">
+
+    <link rel="apple-touch-icon" href="/img/game.hoyo.idv.tw.logo-64.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/img/game.hoyo.idv.tw.logo-152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/game.hoyo.idv.tw.logo-180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/img/game.hoyo.idv.tw.logo-167.png">
+
+    <meta name="theme-color" content="#ffffff">
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Hoyo 遊戲平台">
+    <meta property="og:description" content="Hoyo 遊戲平台">
+    <meta property="og:url" content="//game.hoyo.idv.tw/">
+    <meta property="og:image" content="/img/game.hoyo.idv.tw.logo-64.png">
+    <title>Hoyo 遊戲平台 - 賓果</title>
+
+    <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/fastbootstrap@2.2.0/dist/css/fastbootstrap.min.css" rel="stylesheet">
+    <!--<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet">-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- font-awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <!--  -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-touch-events/2.0.3/jquery.mobile-events.min.js"></script>
+
+    <!-- jQuery-Validation-Engine -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/posabsolute/jQuery-Validation-Engine@3.1.0/css/validationEngine.jquery.css">
+    <script src="https://cdn.jsdelivr.net/gh/posabsolute/jQuery-Validation-Engine@3.1.0/js/languages/jquery.validationEngine-zh_TW.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/posabsolute/jQuery-Validation-Engine@3.1.0/js/jquery.validationEngine.min.js"></script>
+
+    <!--  loading overlay-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-loading-overlay/2.1.7/loadingoverlay.min.js"></script>
+
+    <!-- jBox -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jbox@1.3.3/dist/jBox.all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jbox@1.3.3/dist/jBox.all.min.js"></script>
+
+    <!-- MQTT -->
+    <script src="https://cdn.jsdelivr.net/npm/paho-mqtt@1.0.3/mqttws31-min.js"></script>
+
+    <!-- qrcode -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- 取消下拉更新 -->
+    <style>
+        /* prevent pull-to-refresh for Safari 16+ */
+        @media screen and (pointer: coarse) {
+            @supports (-webkit-backdrop-filter: blur(1px)) and (overscroll-behavior-y: none)  {
+                html {
+                    min-height: 100.3%;
+                    overscroll-behavior-y: none;
+                }
+            }
+        }
+        /* prevent pull-to-refresh for Safari 9~15 */
+        @media screen and (pointer: coarse) {
+            @supports (-webkit-backdrop-filter: blur(1px)) and (not (overscroll-behavior-y: none))  {
+                html {
+                    height: 100%;
+                    overflow: hidden;
+                }
+                body {
+                    margin: 0;
+                    max-height: 100%; /* or `height: calc(100% - 16px);` if body has default margin */
+                    overflow: auto;
+                    -webkit-overflow-scrolling: touch;
+                }
+                /* in this case to disable pinch-zoom, set `touch-action: pan-x pan-y;` on `body` instead of `html` */
+            }
+        }
+        /* prevent pull-to-refresh for Chrome 63+ */
+        body{
+            overscroll-behavior-y: none;
+        }
+    </style>
+
+    <style>
+        .btn { font-size: 16px; }
+
+        html, body { height: 100%; }
+        p{ margin-bottom: 0 !important; }
+
+        .single-ellipsis {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* 關閉手機下拉重新整理 */
+        /* https://usefulangle.com/post/278/html-disable-pull-to-refresh-with-css */
+        body {
+            overscroll-behavior: contain;
+        }
+
+        .group {
+            border: 1px solid #aaa;
+            margin: 6px 0;
+            padding: 8px;
+            cursor: pointer;
+            background-color: #fff;
+        }
+
+        .room {
+            border: 1px solid #aaa;
+            margin: 0 0 16px;
+            padding: 8px;
+            box-shadow: 3px 4px 4px #aaa;
+            cursor: pointer;
+            background-color: #fff;
+        }
+
+        .room_people {
+            height: 4rem;
+            box-shadow: inset 0 0 8px 6px #5dcfbf;
+            margin: 0 0.5rem 0.5rem 0;
+            text-align: center;
+            line-height: 4rem;
+            border-radius: 4px;
+            width: 100%;
+            /*padding: 8px 0;*/
+        }
+        .user_list_user_name{
+            padding: 6px 10px;
+            background-color: #1e9586;
+            color: #fff;
+            margin-right: 4px;
+            border-radius: 24px;
+        }
+        .ui-slider {
+            width: 90% !important;
+        }
+
+        .ui-slider-handle {
+            width: 2rem !important;
+            height: 1.5rem !important;
+            text-align: center;
+        }
+
+        .ui-slider-horizontal .ui-slider-handle {
+            top: -0.4em !important;
+        }
+
+        .vertical_center > div {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            /*padding: 1rem;*/
+            /*box-shadow: 6px 6px 12px;*/
+        }
+
+        .vertical_center > div > div {
+            width: 360px;
+        }
+
+        /*@media (min-width: 576px) {*/
+        /*    .container, .container-sm {*/
+        /*        !*max-width: 100%;*!*/
+        /*    }*/
+        /*}*/
+
+        @media (max-width: 460px) {
+            .vertical_center > div > div {
+                /*width: 100%;*/
+                /*margin-left: 0;*/
+            }
+            .vertical_center > div {
+                /*width: 85%;*/
+            }
+        }
+
+        .area{
+            background-color: #ffffff00;
+            /*height: 100vh;*/
+            padding-bottom: 2rem;
+        }
+
+        #area_join {
+            background-image: radial-gradient(circle at 67% 83%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 1%, transparent 1%, transparent 5%, transparent 5%, transparent 100%), radial-gradient(circle at 24% 80%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 27%, transparent 27%, transparent 63%, transparent 63%, transparent 100%), radial-gradient(circle at 23% 5%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 26%, transparent 26%, transparent 82%, transparent 82%, transparent 100%), radial-gradient(circle at 21% 11%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 35%, transparent 35%, transparent 45%, transparent 45%, transparent 100%), radial-gradient(circle at 10% 11%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 21%, transparent 21%, transparent 81%, transparent 81%, transparent 100%), radial-gradient(circle at 19% 61%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 20%, transparent 20%, transparent 61%, transparent 61%, transparent 100%), radial-gradient(circle at 13% 77%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 63%, transparent 63%, transparent 72%, transparent 72%, transparent 100%), radial-gradient(circle at 30% 93%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 33%, transparent 33%, transparent 82%, transparent 82%, transparent 100%), linear-gradient(90deg, rgb(22, 176, 207), rgb(103, 7, 215));
+            height: 100%;
+            width: 100%;
+        }
+
+        /*  */
+        #area_room_{
+            background-image: linear-gradient(315deg, rgba(254, 246, 210, 0.53) 0%, rgba(254, 246, 210, 0.53) 14.286%, rgba(221, 240, 216, 0.53) 14.286%, rgba(221, 240, 216, 0.53) 28.572%, rgba(188, 233, 223, 0.53) 28.572%, rgba(188, 233, 223, 0.53) 42.858%, rgba(156, 227, 229, 0.53) 42.858%, rgba(156, 227, 229, 0.53) 57.144%, rgba(123, 220, 235, 0.53) 57.144%, rgba(123, 220, 235, 0.53) 71.42999999999999%, rgba(90, 214, 242, 0.53) 71.43%, rgba(90, 214, 242, 0.53) 85.71600000000001%, rgba(57, 207, 248, 0.53) 85.716%, rgba(57, 207, 248, 0.53) 100.002%), linear-gradient(405deg, rgb(246, 99, 200) 0%, rgb(246, 99, 200) 12.5%, rgb(223, 98, 196) 12.5%, rgb(223, 98, 196) 25%, rgb(199, 97, 192) 25%, rgb(199, 97, 192) 37.5%, rgb(176, 96, 188) 37.5%, rgb(176, 96, 188) 50%, rgb(152, 95, 184) 50%, rgb(152, 95, 184) 62.5%, rgb(129, 94, 180) 62.5%, rgb(129, 94, 180) 75%, rgb(105, 93, 176) 75%, rgb(105, 93, 176) 87.5%, rgb(82, 92, 172) 87.5%, rgb(82, 92, 172) 100%);
+        }
+
+        #area_room {
+            /*min-height: 100vh;*/
+        }
+
+        #id_cards {
+            min-height: 100vh;
+            background-image: linear-gradient(45deg, rgb(27, 92, 18) 0%, rgb(27, 92, 18) 2%, rgb(28, 82, 45) 2%, rgb(28, 82, 45) 23%, rgb(29, 72, 72) 23%, rgb(29, 72, 72) 34%, rgb(30, 61, 98) 34%, rgb(30, 61, 98) 96%, rgb(31, 51, 125) 96%, rgb(31, 51, 125) 100%), linear-gradient(0deg, rgb(27, 92, 18) 0%, rgb(27, 92, 18) 2%, rgb(28, 82, 45) 2%, rgb(28, 82, 45) 23%, rgb(29, 72, 72) 23%, rgb(29, 72, 72) 34%, rgb(30, 61, 98) 34%, rgb(30, 61, 98) 96%, rgb(31, 51, 125) 96%, rgb(31, 51, 125) 100%), linear-gradient(135deg, rgb(27, 92, 18) 0%, rgb(27, 92, 18) 2%, rgb(28, 82, 45) 2%, rgb(28, 82, 45) 23%, rgb(29, 72, 72) 23%, rgb(29, 72, 72) 34%, rgb(30, 61, 98) 34%, rgb(30, 61, 98) 96%, rgb(31, 51, 125) 96%, rgb(31, 51, 125) 100%), linear-gradient(90deg, rgb(186, 19, 165), rgb(19, 125, 241));
+            background-blend-mode: overlay, overlay, overlay, normal;
+        }
+
+        .stage_background {
+            background-image: linear-gradient(to right bottom, #ebdcff, #cfeaff, #bef6ff, #c8fef0, #e8ffdc);
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        .question_count{
+            display: inline-block;
+            margin: 0 0.25rem;
+            border: 1px solid #eee;
+            width: 2rem;
+            height: 2rem;
+            line-height: 30px;
+            border-radius: 2rem;
+            font-size: 1.25rem;
+            box-shadow: 2px 2px 8px;
+        }
+        .question_count.active{
+            border: none;
+            background-color: #fe7474;
+            color: #ffffff;
+        }
+        .question_count:hover{
+            cursor: pointer;
+        }
+
+        /* 用来实现动画的keyframes;  从0度旋转到360度 */
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .option {
+            float: left;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #cccccc;
+            margin-right: 10px;
+        }
+
+        .active {
+            border: 2px solid black;
+        }
+
+        .lw {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        img.output {
+            border: 1px solid green;
+        }
+
+        .box{
+            display: inline-block;
+            width: 36px;
+            height: 36px;
+            border: 1px solid #ddd;
+            padding: 2px 2px;
+            font-size: 20px;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 2px 2px 2px #666;
+            margin: 2px 3px;
+            cursor: pointer;
+            color: #269d8d;
+            font-weight: bold;
+        }
+
+        .box.disabled{
+            color: #fff;
+            background-color: #eee !important;
+        }
+
+        .correct_answer{
+            background-color: #d7ff90;
+        }
+    </style>
+
+    <!-- 選單 -->
+    <style>
+        body.offcanvas-active {
+            overflow: hidden;
+        }
+
+        .offcanvas-header {
+            display: none;
+        }
+
+        .screen-darken {
+            height: 100%;
+            width: 0;
+            z-index: 30;
+            position: fixed;
+            top: 0;
+            right: 0;
+            opacity: 0;
+            visibility: hidden;
+            background-color: rgba(34, 34, 34, 0.6);
+            transition: opacity .1s linear, visibility 0.1s, width 2s ease-in;
+        }
+
+        .screen-darken.active {
+            z-index: 10;
+            transition: opacity .1s ease, width 0s;
+            opacity: 1;
+            width: 100%;
+            visibility: visible;
+        }
+
+        @media all and (max-width: 1399px) {
+            .offcanvas-header {
+                display: block;
+            }
+
+            .mobile-offcanvas {
+                visibility: hidden;
+                transform: translateX(-100%);
+                border-radius: 0;
+                display: block;
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100%;
+                z-index: 1200;
+                width: 80%;
+                overflow-y: scroll;
+                overflow-x: hidden;
+                transition: visibility .1s ease-in-out, transform .1s ease-in-out;
+            }
+
+            .mobile-offcanvas.show {
+                visibility: visible;
+                transform: translateX(0);
+            }
+
+            .mobile-offcanvas .container, .mobile-offcanvas .container-fluid {
+                display: block;
+            }
+        }
+
+        .nav-item > a {
+            color: #000 !important;
+        }
+
+        /* 選單連結文字 */
+        .link_text {
+            border-bottom: 1px #fff solid;
+            padding-bottom: 1px;
+        }
+
+        .nav-link {
+            background-color: #fff;
+            padding: 6px 8px;
+            border-radius: 6px;
+            box-shadow: 2px 2px 2px, 2px 2px 2px, 2px 2px 2px, 2px 2px 2px, 2px 2px 2px;
+        }
+    </style>
+
+    <!-- game -->
+    <style>
+        @media (min-width: 576px) {
+            .container_mobile {
+                max-width: 540px;
+                width: 100%;
+                padding-right: calc(var(--bs-gutter-x) * .5);
+                padding-left: calc(var(--bs-gutter-x) * .5);
+                margin-right: auto;
+                margin-left: auto;
+            }
+        }
+        .box{
+            display: inline-block;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 45px;
+        }
+        .table_bingo tr{
+            border: none;
+        }
+        .table_bingo td{
+            cursor: pointer;
+            box-shadow: 1px 1px 3px #999;
+        }
+        .table_9 td{
+            font-size: 2rem;
+            width: 80px;
+            height: 80px;
+            line-height: 67px;
+        }
+        .table_25 td{
+            font-size: 1.5rem;
+            width: 60px;
+            height: 60px;
+            line-height: 47px;
+        }
+        .table_49 td{
+            font-size: 1rem;
+            width: 44px;
+            height: 44px;
+            line-height: 28px;
+        }
+        td.active{
+            background-color: #a7d6f1;
+            border-radius: 100%;
+        }
+        .avatar {
+            background-color: #f9b547 !important;
+        }
+        .avatar:last-child {
+            background-color:#ff0000 !important;
+        }
+
+        #id_qrcode{
+            text-align: center;
+        }
+        #id_qrcode img{
+            display: inline-block !important;
+        }
+        .show_answer label{
+            font-size: 1.25rem;
+        }
+    </style>
+
+</head>
+
+<!--  -->
+<body class="stage_background" style="min-height: 100vh; margin-left: auto; margin-right: auto;">
+
+<!-- 選單 -->
+<span class="screen-darken"></span>
+<nav id="navbar_main" class="mobile-offcanvas navbar navbar-expand-xxl navbar-dark bg-primary">
+    <div class="container-fluid">
+        <div class="offcanvas-header">
+            <button class="btn-close float-end" style=" background-color: #fff; width: 32px; height: 32px; margin: 4px 0;"></button>
+        </div>
+        <a class="navbar-brand" href="javascript:void(0)">選單</a>
+
+        <ul class="navbar-nav mt-4">
+            <li class="nav-item mb-3 room_owner"><a href="https://game.hoyo.idv.tw/" class="nav-link" style="background-color: #fffce6;"><span class=""><i class="fa-solid fa-house"></i> 回大廳</span></a></li>
+            <li class="nav-item mb-3 room_owner"><a class="nav-link" href="javascript:void(0)" onclick="refresh()"><span class=""><i class="fa-solid fa-arrows-rotate"></i> 刷新</span></a></li>
+            <li class="nav-item mb-3"><a class="nav-link" href="javascript:void(0)" onclick="modal_rule()"><span class=""><i class="fa-regular fa-circle-question"></i> 遊戲說明</span></a></li>
+            <li class="nav-item mb-3 room_owner"><a class="nav-link" href="javascript:void(0)" style="background-color: #ffefef;" onclick="reset_game(); close_offcanvas();"><span class=""><i class="fa-solid fa-bomb"></i> 開新局</span></a></li>
+            <li class="nav-item mb-3 room_owner"><a class="nav-link" href="javascript:void(0)" style="background-color: #fdd6d6;" onclick="clear_storage()"><span class=""><i class="fa-solid fa-right-from-bracket"></i> 登出</span></a></li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <button type="button" data-trigger="navbar_main" class="d-xxl-none btn btn-outline-primary fs-4" style="line-height: 0;"><i class="fa-solid fa-angles-right"></i></button>
+        </div>
+        <div class="col"></div>
+    </div>
+</div>
+
+<!-- 主要訊息 -->
+<div class="area" id="area_message" style="display: none;">
+    <div id="id_message"></div>
+</div>
+
+<!-- 勝利 -->
+<div class="area" id="area_win" style="display: none;">
+
+    <div class="vertical_center">
+        <div>
+
+            <!-- -->
+            <div style=" position: relative; width: 360px; height: 360px; text-align: center; vertical-align: middle;">
+                <div style=" z-index: 2; font-size: 24px;">
+
+                    <div id="id_win_username" style="height: 360px; display: flex; align-items: center; justify-content: center; flex-wrap: nowrap; flex-direction: column;"></div>
+
+                </div>
+                <div id="rays"></div>
+            </div>
+
+            <div class="mt-3">
+                <button type="button" style="z-index: 1; width: 100%;" class="btn btn-outline-danger" onclick="reset_game()">
+                    開新局
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- 先加入 -->
+<div class="area" id="area_join" style="display: none;">
+
+    <div class="vertical_center">
+        <div class="row" style="--bs-gutter-x: 0;">
+            <div style="padding: 1rem 2rem; box-shadow: 2px 2px 4px;">
+                <form id="id_form_join">
+                    <div>輸入姓名</div>
+                    <label for="id_join"></label>
+                    <input id="id_join" type="text" class="form-control" data-validation-engine="validate[required]">
+
+                    <div class="mt-3 mb-2">
+                        <button type="submit" class="btn btn-dark col-12">加入</button>
+                    </div>
+                </form>
+
+                <div class="text-center"><a href="#" target="_blank">操作說明</a></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 選擇 room -->
+<div class="area" id="area_room" style="display: none;">
+    <div id="area_room_box" class="container" style="">
+
+        <div style=" padding: 12px 0; font-size: 1.2rem; color: #000; font-weight: bold;">
+            活動空間：
+        </div>
+
+        <button id="id_create_room_button" class="btn btn-outline-dark btn-lg col-12 bg-light" onclick="modal_create_room()" style="display: none;"><i class="fa-solid fa-circle-plus"></i> 建立</button>
+
+        <div id="room_list" class="mt-3"></div>
+    </div>
+</div>
+
+<!-- ---------------- HOST ---------------- -->
+<div class="area" id="area_view" style="display: none; overflow-x: hidden;">
+
+    <div class="container" style="background-color: #fff; padding-bottom: 1rem;">
+
+        <!--  -->
+        <div class="row">
+            <div class="col-12">
+                <div class="text-center">
+
+                    <!--  -->
+                    <div id="id_view_question_number" class="p-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!--  -->
+        <div class="row shadow p-3 mb-4 text-center">
+            <div class="col">
+                <div>回答人數</div>
+                <div>
+                    <span id="id_player_question_answer" class="fs-3">0</span> / <span class="total_player"></span>
+                </div>
+            </div>
+            <div class="col">
+                <div>答<span style="color: #4f9f12; font-size: 1.5rem; font-weight: bold;">對</span>人數</div>
+                <div><span id="id_player_answer_correct" class="fs-3">0</span></div>
+            </div>
+            <div class="col">
+                <div>答<span style="color: #d02525; font-size: 1.5rem; font-weight: bold;">錯</span>人數</div>
+                <div><span id="id_player_answer_wrong" class="fs-3">0</span></div>
+            </div>
+        </div>
+
+        <div class="row shadow mb-4">
+            <div class="col-12">
+                <!--  -->
+                <div class="mt-4 mb-3 p-3">
+                    <div class="show_unit modal_title"></div>
+                    <div class="show_question" style="font-size: 1.25rem;"></div>
+                    <div id="id_answer_host" class="show_answer mt-4" style=""></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row text-center">
+            <div class="col"><button type="button" class="btn btn-info" onclick="parse_question()">解答</button></div>
+            <div class="col"><button type="button" class="btn btn-info" onclick="next()">下一題</button></div>
+        </div>
+
+        <div class="row text-center">
+            <div class="col">
+                <div id="id_viewer_parse_message"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ---------------- play ---------------- -->
+
+<!-- 等待 -->
+<div class="area" id="area_room_wait" style="display: none; overflow-x: hidden;">
+    <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+        <div class="shadow-lg px-8 py-4" style="background-color: #fff;">
+            <div id="id_wait_message_ok" class="wait_message">
+                <div class="mb-3">已經進入 <span id="id_wait_peoples" style="font-size: 2rem;"></span> 人</div>
+                <div>等待開始 <i class="fa-solid fa-spinner fa-spin-pulse"></i></div>
+            </div>
+            <div id="id_wait_message_error" class="wait_message">
+                <div>無此房間，請再確認！</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 進入 -->
+<div class="area" id="area_play" style="display: none; overflow-x: hidden;">
+
+    <div class="container" style="background-color: #fff; padding-bottom: 2rem;">
+
+        <div class="row">
+            <div class="col-12 text-center">
+                <div>倒數：<span id="id_player_score" style="font-size: 1.5rem;"></span></div>
+            </div>
+
+            <div class="col-12">
+                <div class="p-2 shadow-lg ">
+                    <div class="show_unit modal_title"></div>
+                    <div class="show_question mt-3" style="font-size: 1.25rem;"></div>
+                    <form id="id_form_player" autocomplete="off">
+                        <div id="id_answer_player" class="show_answer mt-4 player" style=""></div>
+                        <button type="submit" class="btn btn-primary w-100">確定</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- HOST viewer finish -->
+<div class="area" id="area_view_finish" style="display: none; overflow-x: hidden;">
+
+    <div class="container" style="background-color: #fff; padding-bottom: 2rem;">
+
+        <div>HOST viewer finish</div>
+
+        <div class="fw-bold text-center" style="font-size: 2rem;"><i class="fa-solid fa-ranking-star" style="color: #bf1515; font-size: 2rem;"></i> 排行榜</div>
+        <div class="rankings m-3"></div>
+
+        <div class="finish_question_list"></div>
+    </div>
+
+</div>
+
+<!-- Player finish -->
+<div class="area" id="area_player_finish" style="display: none; ">
+
+    <div class="container" style="background-color: #fff; padding-bottom: 2rem;">
+
+        <div class="fw-bold text-center" style="font-size: 2rem;"><i class="fa-solid fa-ranking-star" style="color: #bf1515; font-size: 2rem;"></i> 排行榜</div>
+        <div class="rankings m-3"></div>
+
+        <!--<hr>-->
+
+        <!--<div>-->
+        <!--    我的排名：<span class="my_rank"></span>-->
+        <!--</div>-->
+
+        <!--<div>題目</div>-->
+        <div class="finish_question_list"></div>
+
+    </div>
+
+</div>
+
+<!--  -->
+<div id="modal_create_room" class="modal fade" data-bs-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                建立對戰房間
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-group row">
+                    <div class="col-12">
+                        <form id="id_form_create_room" autocomplete="off">
+                            <input type="hidden" name="id">
+
+                            <div class="input-group mb-3">
+                                <input type="text" id="id_create_room_name" class="form-control text-center" name="name" placeholder="房間名稱" aria-describedby="button-addon2">
+                                <button class="btn btn-outline-secondary" type="button" id="button-addon2" onclick="random_room_name()">隨機</button>
+                            </div>
+
+                            <!--<div class="mb-2">-->
+                            <!--    <label for="id_set_subject" class="col-12 col-form-label">科目</label>-->
+                            <!--    <div class="col-12">-->
+                            <!--        <select name="subject" id="id_set_subject" class="form-control text-center"><option value="177">PTT 企業綽號</option>-->
+                            <!--            <option value="178">台灣古蹟、景點</option>-->
+                            <!--            <option value="179">宮崎駿動畫電影人物</option>-->
+                            <!--            <option value="180">台灣縣市市徽</option>-->
+                            <!--            <option value="196">OPEN 醬是什麼動物你知道嗎？關於 7-11 的10個冷知識！</option>-->
+                            <!--            <option value="197">197</option>-->
+                            <!--            <option value="200">200</option>-->
+                            <!--        </select>-->
+                            <!--    </div>-->
+                            <!--</div>-->
+
+                            <!--<div class="mb-2">-->
+                            <!--    <label for="id_question_number" class="col-12 col-form-label">題數</label>-->
+                            <!--    <div class="col-12">-->
+                            <!--        <select name="question_number" id="id_question_number" class="form-control text-center">-->
+                            <!--            <option value="3">3</option>-->
+                            <!--            <option value="5" selected>5</option>-->
+                            <!--            <option value="10">10</option>-->
+                            <!--            <option value="20">20</option>-->
+                            <!--            <option value="30">30</option>-->
+                            <!--            <option value="40">40</option>-->
+                            <!--            <option value="50">50</option>-->
+                            <!--            <option value="60">60</option>-->
+                            <!--        </select>-->
+                            <!--    </div>-->
+                            <!--</div>-->
+
+                            <div class="mb-2">
+                                <label for="id_join_number" class="col-12 col-form-label">人數</label>
+                                <div class="col-12">
+                                    <select name="join_number" id="id_join_number" class="form-control text-center">
+                                        <option value="2">2</option>
+                                        <option value="50" selected>50</option>
+                                        <option value="100">100</option>
+                                        <option value="200">200</option>
+                                        <option value="300">300</option>
+                                        <option value="400">400</option>
+                                        <option value="500">500</option>
+                                        <option value="600">600</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="id_answer_time" class="col-12 col-form-label">答題時間</label>
+                                <div class="col-12">
+                                    <select name="answer_time" id="id_answer_time" class="form-control text-center">
+                                        <option value="10">每題 10 秒</option>
+                                        <option value="20" selected>每題 20 秒</option>
+                                        <option value="30">每題 30 秒</option>
+                                        <option value="45">每題 45 秒</option>
+                                        <option value="60">每題一分鐘</option>
+                                        <option value="90">每題 90 秒</option>
+                                        <option value="120">每題二分鐘</option>
+                                        <option value="180">每題三分鐘</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="submit_create_room()">確定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--  -->
+<div id="modal_parse_question" class="modal fade" data-bs-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <div>正答：<span class="parse_correct_answer"></span></div>
+                        <div>回答：<span class="parse_player_answer"></span></div>
+                    </div>
+
+                    <div class="col-12 text-center">
+                        <div>總得分：<span class="user_total_score" style="font-size: 1.5rem;">0</span>
+                        </div>
+                        <div>這題得分：<span class="user_question_score" style="font-size: 1.5rem;">0</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--  -->
+<div id="modal_qrcode" class="modal fade" data-bs-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+               <div id="id_qrcode"></div>
+               <div id="id_qrcode_text"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="php.js?v=65cd879be1395"></script>
+
+<script>
+
+    let url = new URL(window.location.href);
+
+    let client_id, room_id;
+    if (window.localStorage.client_id === undefined) {
+        window.localStorage.client_id = substr(Math.random().toString(16), 2, -1);
+        client_id = window.localStorage.client_id;
+        console.log(client_id);
+    }
+    else{
+        client_id = window.localStorage.client_id;
+    }
+    room_id = window.localStorage.client_id;
+
+    // const qrcode = new QRCode("test", {
+    //     text: "http://jindo.dev.naver.com/collie",
+    //     width: qrcode_size,
+    //     height: qrcode_size,
+    //     colorDark : "#000000",
+    //     colorLight : "#ffffff",
+    //     correctLevel : QRCode.CorrectLevel.L // 由低到高 L M Q H
+    // });
+
+    // 運作環境切換
+    let environment = 'company';
+    // let environment = 'home';
+
+    let mc;
+    let mqtt_client_id = window.localStorage.client_id + '_' + substr(Math.random().toString(16), 2, -1);
+    let $identity;
+
+    function onConnect(){
+
+        mc.subscribe('MOPCON2024HOYO/' + window.localStorage.client_id, {
+            onSuccess: function (){
+                console.log(client_id + ' subscribe');
+            },
+            onFailure: function (){}
+        });
+
+        mc.subscribe('MOPCON2024HOYO/lobby', {
+            onSuccess: function (){
+                console.log('lobby subscribe');
+            },
+            onFailure: function (){}
+        });
+
+        // viewer 設定題目
+        if ( $_GET('order') ) {
+
+        }
+
+        // player 進入房間
+        if ($_GET('room_id') === null) {
+            let message = new Paho.MQTT.Message(JSON.stringify({
+                command: "get_status",
+                user_id: window.localStorage.client_id,
+            }));
+            message.destinationName = "MOPCON2024HOYO/server";
+            mc.send(message);
+        } else {
+            // let message = new Paho.MQTT.Message(JSON.stringify({
+            //     command: "get_status",
+            //     user_id: window.localStorage.client_id,
+            // }));
+            // message.destinationName = "MOPCON2024HOYO/server";
+            // mc.send(message);
+
+            if ( $identity ==='player' ) {
+                console.log('player');
+                in_room($_GET('room_id'));
+            }
+        }
+    }
+
+    if (environment === 'company') {
+        mc = new Paho.MQTT.Client("broker.hivemq.com", 8884, mqtt_client_id);
+        mc.connect({
+            onSuccess: onConnect,
+            useSSL: true,
+        });
+    } else {
+        mc = new Paho.MQTT.Client("test.hoyo.idv.tw", 8084, mqtt_client_id);
+        mc.connect({
+            onSuccess: onConnect,
+            useSSL: true,
+            userName:"user123",
+            password:"secret",
+        });
+    }
+
+    // set callback handlers
+    mc.onConnectionLost = function (responseObject) {
+        console.log(responseObject.errorCode, responseObject.errorMessage);
+    }
+
+</script>
+<script src="app.js?v=3"></script>
+</body>
+</html>
