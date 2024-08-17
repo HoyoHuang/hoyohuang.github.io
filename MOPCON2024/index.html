@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -61,392 +60,7 @@
     <!-- qrcode -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-    <!-- 取消下拉更新 -->
-    <style>
-        /* prevent pull-to-refresh for Safari 16+ */
-        @media screen and (pointer: coarse) {
-            @supports (-webkit-backdrop-filter: blur(1px)) and (overscroll-behavior-y: none)  {
-                html {
-                    min-height: 100.3%;
-                    overscroll-behavior-y: none;
-                }
-            }
-        }
-        /* prevent pull-to-refresh for Safari 9~15 */
-        @media screen and (pointer: coarse) {
-            @supports (-webkit-backdrop-filter: blur(1px)) and (not (overscroll-behavior-y: none))  {
-                html {
-                    height: 100%;
-                    overflow: hidden;
-                }
-                body {
-                    margin: 0;
-                    max-height: 100%; /* or `height: calc(100% - 16px);` if body has default margin */
-                    overflow: auto;
-                    -webkit-overflow-scrolling: touch;
-                }
-                /* in this case to disable pinch-zoom, set `touch-action: pan-x pan-y;` on `body` instead of `html` */
-            }
-        }
-        /* prevent pull-to-refresh for Chrome 63+ */
-        body{
-            overscroll-behavior-y: none;
-        }
-    </style>
-
-    <style>
-        .btn { font-size: 16px; }
-
-        html, body { height: 100%; }
-        p{ margin-bottom: 0 !important; }
-
-        .single-ellipsis {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        /* 關閉手機下拉重新整理 */
-        /* https://usefulangle.com/post/278/html-disable-pull-to-refresh-with-css */
-        body {
-            overscroll-behavior: contain;
-        }
-
-        .group {
-            border: 1px solid #aaa;
-            margin: 6px 0;
-            padding: 8px;
-            cursor: pointer;
-            background-color: #fff;
-        }
-
-        .room {
-            border: 1px solid #aaa;
-            margin: 0 0 16px;
-            padding: 8px;
-            box-shadow: 3px 4px 4px #aaa;
-            cursor: pointer;
-            background-color: #fff;
-        }
-
-        .room_people {
-            height: 4rem;
-            box-shadow: inset 0 0 8px 6px #5dcfbf;
-            margin: 0 0.5rem 0.5rem 0;
-            text-align: center;
-            line-height: 4rem;
-            border-radius: 4px;
-            width: 100%;
-            /*padding: 8px 0;*/
-        }
-        .user_list_user_name{
-            padding: 6px 10px;
-            background-color: #1e9586;
-            color: #fff;
-            margin-right: 4px;
-            border-radius: 24px;
-        }
-        .ui-slider {
-            width: 90% !important;
-        }
-
-        .ui-slider-handle {
-            width: 2rem !important;
-            height: 1.5rem !important;
-            text-align: center;
-        }
-
-        .ui-slider-horizontal .ui-slider-handle {
-            top: -0.4em !important;
-        }
-
-        .vertical_center > div {
-            position: absolute;
-            top: 45%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #fff;
-            /*padding: 1rem;*/
-            /*box-shadow: 6px 6px 12px;*/
-        }
-
-        .vertical_center > div > div {
-            width: 360px;
-        }
-
-        /*@media (min-width: 576px) {*/
-        /*    .container, .container-sm {*/
-        /*        !*max-width: 100%;*!*/
-        /*    }*/
-        /*}*/
-
-        @media (max-width: 460px) {
-            .vertical_center > div > div {
-                /*width: 100%;*/
-                /*margin-left: 0;*/
-            }
-            .vertical_center > div {
-                /*width: 85%;*/
-            }
-        }
-
-        .area{
-            background-color: #ffffff00;
-            /*height: 100vh;*/
-            padding-bottom: 2rem;
-        }
-
-        #area_join {
-            background-image: radial-gradient(circle at 67% 83%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 1%, transparent 1%, transparent 5%, transparent 5%, transparent 100%), radial-gradient(circle at 24% 80%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 27%, transparent 27%, transparent 63%, transparent 63%, transparent 100%), radial-gradient(circle at 23% 5%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 26%, transparent 26%, transparent 82%, transparent 82%, transparent 100%), radial-gradient(circle at 21% 11%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 35%, transparent 35%, transparent 45%, transparent 45%, transparent 100%), radial-gradient(circle at 10% 11%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 21%, transparent 21%, transparent 81%, transparent 81%, transparent 100%), radial-gradient(circle at 19% 61%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 20%, transparent 20%, transparent 61%, transparent 61%, transparent 100%), radial-gradient(circle at 13% 77%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 63%, transparent 63%, transparent 72%, transparent 72%, transparent 100%), radial-gradient(circle at 30% 93%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 33%, transparent 33%, transparent 82%, transparent 82%, transparent 100%), linear-gradient(90deg, rgb(22, 176, 207), rgb(103, 7, 215));
-            height: 100%;
-            width: 100%;
-        }
-
-        /*  */
-        #area_room_{
-            background-image: linear-gradient(315deg, rgba(254, 246, 210, 0.53) 0%, rgba(254, 246, 210, 0.53) 14.286%, rgba(221, 240, 216, 0.53) 14.286%, rgba(221, 240, 216, 0.53) 28.572%, rgba(188, 233, 223, 0.53) 28.572%, rgba(188, 233, 223, 0.53) 42.858%, rgba(156, 227, 229, 0.53) 42.858%, rgba(156, 227, 229, 0.53) 57.144%, rgba(123, 220, 235, 0.53) 57.144%, rgba(123, 220, 235, 0.53) 71.42999999999999%, rgba(90, 214, 242, 0.53) 71.43%, rgba(90, 214, 242, 0.53) 85.71600000000001%, rgba(57, 207, 248, 0.53) 85.716%, rgba(57, 207, 248, 0.53) 100.002%), linear-gradient(405deg, rgb(246, 99, 200) 0%, rgb(246, 99, 200) 12.5%, rgb(223, 98, 196) 12.5%, rgb(223, 98, 196) 25%, rgb(199, 97, 192) 25%, rgb(199, 97, 192) 37.5%, rgb(176, 96, 188) 37.5%, rgb(176, 96, 188) 50%, rgb(152, 95, 184) 50%, rgb(152, 95, 184) 62.5%, rgb(129, 94, 180) 62.5%, rgb(129, 94, 180) 75%, rgb(105, 93, 176) 75%, rgb(105, 93, 176) 87.5%, rgb(82, 92, 172) 87.5%, rgb(82, 92, 172) 100%);
-        }
-
-        #area_room {
-            /*min-height: 100vh;*/
-        }
-
-        #id_cards {
-            min-height: 100vh;
-            background-image: linear-gradient(45deg, rgb(27, 92, 18) 0%, rgb(27, 92, 18) 2%, rgb(28, 82, 45) 2%, rgb(28, 82, 45) 23%, rgb(29, 72, 72) 23%, rgb(29, 72, 72) 34%, rgb(30, 61, 98) 34%, rgb(30, 61, 98) 96%, rgb(31, 51, 125) 96%, rgb(31, 51, 125) 100%), linear-gradient(0deg, rgb(27, 92, 18) 0%, rgb(27, 92, 18) 2%, rgb(28, 82, 45) 2%, rgb(28, 82, 45) 23%, rgb(29, 72, 72) 23%, rgb(29, 72, 72) 34%, rgb(30, 61, 98) 34%, rgb(30, 61, 98) 96%, rgb(31, 51, 125) 96%, rgb(31, 51, 125) 100%), linear-gradient(135deg, rgb(27, 92, 18) 0%, rgb(27, 92, 18) 2%, rgb(28, 82, 45) 2%, rgb(28, 82, 45) 23%, rgb(29, 72, 72) 23%, rgb(29, 72, 72) 34%, rgb(30, 61, 98) 34%, rgb(30, 61, 98) 96%, rgb(31, 51, 125) 96%, rgb(31, 51, 125) 100%), linear-gradient(90deg, rgb(186, 19, 165), rgb(19, 125, 241));
-            background-blend-mode: overlay, overlay, overlay, normal;
-        }
-
-        .stage_background {
-            background-image: linear-gradient(to right bottom, #ebdcff, #cfeaff, #bef6ff, #c8fef0, #e8ffdc);
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-        }
-
-        .question_count{
-            display: inline-block;
-            margin: 0 0.25rem;
-            border: 1px solid #eee;
-            width: 2rem;
-            height: 2rem;
-            line-height: 30px;
-            border-radius: 2rem;
-            font-size: 1.25rem;
-            box-shadow: 2px 2px 8px;
-        }
-        .question_count.active{
-            border: none;
-            background-color: #fe7474;
-            color: #ffffff;
-        }
-        .question_count:hover{
-            cursor: pointer;
-        }
-
-        /* 用来实现动画的keyframes;  从0度旋转到360度 */
-        @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .option {
-            float: left;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #cccccc;
-            margin-right: 10px;
-        }
-
-        .active {
-            border: 2px solid black;
-        }
-
-        .lw {
-            text-align: center;
-            vertical-align: middle;
-        }
-
-        img.output {
-            border: 1px solid green;
-        }
-
-        .box{
-            display: inline-block;
-            width: 36px;
-            height: 36px;
-            border: 1px solid #ddd;
-            padding: 2px 2px;
-            font-size: 20px;
-            border-radius: 24px;
-            text-align: center;
-            box-shadow: 2px 2px 2px #666;
-            margin: 2px 3px;
-            cursor: pointer;
-            color: #269d8d;
-            font-weight: bold;
-        }
-
-        .box.disabled{
-            color: #fff;
-            background-color: #eee !important;
-        }
-
-        .correct_answer{
-            background-color: #d7ff90;
-        }
-    </style>
-
-    <!-- 選單 -->
-    <style>
-        body.offcanvas-active {
-            overflow: hidden;
-        }
-
-        .offcanvas-header {
-            display: none;
-        }
-
-        .screen-darken {
-            height: 100%;
-            width: 0;
-            z-index: 30;
-            position: fixed;
-            top: 0;
-            right: 0;
-            opacity: 0;
-            visibility: hidden;
-            background-color: rgba(34, 34, 34, 0.6);
-            transition: opacity .1s linear, visibility 0.1s, width 2s ease-in;
-        }
-
-        .screen-darken.active {
-            z-index: 10;
-            transition: opacity .1s ease, width 0s;
-            opacity: 1;
-            width: 100%;
-            visibility: visible;
-        }
-
-        @media all and (max-width: 1399px) {
-            .offcanvas-header {
-                display: block;
-            }
-
-            .mobile-offcanvas {
-                visibility: hidden;
-                transform: translateX(-100%);
-                border-radius: 0;
-                display: block;
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100%;
-                z-index: 1200;
-                width: 80%;
-                overflow-y: scroll;
-                overflow-x: hidden;
-                transition: visibility .1s ease-in-out, transform .1s ease-in-out;
-            }
-
-            .mobile-offcanvas.show {
-                visibility: visible;
-                transform: translateX(0);
-            }
-
-            .mobile-offcanvas .container, .mobile-offcanvas .container-fluid {
-                display: block;
-            }
-        }
-
-        .nav-item > a {
-            color: #000 !important;
-        }
-
-        /* 選單連結文字 */
-        .link_text {
-            border-bottom: 1px #fff solid;
-            padding-bottom: 1px;
-        }
-
-        .nav-link {
-            background-color: #fff;
-            padding: 6px 8px;
-            border-radius: 6px;
-            box-shadow: 2px 2px 2px, 2px 2px 2px, 2px 2px 2px, 2px 2px 2px, 2px 2px 2px;
-        }
-    </style>
-
-    <!-- game -->
-    <style>
-        @media (min-width: 576px) {
-            .container_mobile {
-                max-width: 540px;
-                width: 100%;
-                padding-right: calc(var(--bs-gutter-x) * .5);
-                padding-left: calc(var(--bs-gutter-x) * .5);
-                margin-right: auto;
-                margin-left: auto;
-            }
-        }
-        .box{
-            display: inline-block;
-            border: 1px solid #ddd;
-            cursor: pointer;
-            font-weight: bold;
-            text-align: center;
-            border-radius: 45px;
-        }
-        .table_bingo tr{
-            border: none;
-        }
-        .table_bingo td{
-            cursor: pointer;
-            box-shadow: 1px 1px 3px #999;
-        }
-        .table_9 td{
-            font-size: 2rem;
-            width: 80px;
-            height: 80px;
-            line-height: 67px;
-        }
-        .table_25 td{
-            font-size: 1.5rem;
-            width: 60px;
-            height: 60px;
-            line-height: 47px;
-        }
-        .table_49 td{
-            font-size: 1rem;
-            width: 44px;
-            height: 44px;
-            line-height: 28px;
-        }
-        td.active{
-            background-color: #a7d6f1;
-            border-radius: 100%;
-        }
-        .avatar {
-            background-color: #f9b547 !important;
-        }
-        .avatar:last-child {
-            background-color:#ff0000 !important;
-        }
-
-        #id_qrcode{
-            text-align: center;
-        }
-        #id_qrcode img{
-            display: inline-block !important;
-        }
-        .show_answer label{
-            font-size: 1.25rem;
-        }
-    </style>
-
+    <link rel="stylesheet" href="style.css?v=1">
 </head>
 
 <!--  -->
@@ -462,11 +76,14 @@
         <a class="navbar-brand" href="javascript:void(0)">選單</a>
 
         <ul class="navbar-nav mt-4">
-            <li class="nav-item mb-3 room_owner"><a href="https://game.hoyo.idv.tw/" class="nav-link" style="background-color: #fffce6;"><span class=""><i class="fa-solid fa-house"></i> 回大廳</span></a></li>
-            <li class="nav-item mb-3 room_owner"><a class="nav-link" href="javascript:void(0)" onclick="refresh()"><span class=""><i class="fa-solid fa-arrows-rotate"></i> 刷新</span></a></li>
-            <li class="nav-item mb-3"><a class="nav-link" href="javascript:void(0)" onclick="modal_rule()"><span class=""><i class="fa-regular fa-circle-question"></i> 遊戲說明</span></a></li>
-            <li class="nav-item mb-3 room_owner"><a class="nav-link" href="javascript:void(0)" style="background-color: #ffefef;" onclick="reset_game(); close_offcanvas();"><span class=""><i class="fa-solid fa-bomb"></i> 開新局</span></a></li>
-            <li class="nav-item mb-3 room_owner"><a class="nav-link" href="javascript:void(0)" style="background-color: #fdd6d6;" onclick="clear_storage()"><span class=""><i class="fa-solid fa-right-from-bracket"></i> 登出</span></a></li>
+            <li class="nav-item mb-3"><a href="https://game.hoyo.idv.tw/" class="nav-link" style="background-color: #fffce6;"><span class=""><i class="fa-solid fa-house"></i> 回大廳</span></a></li>
+            <li class="nav-item mb-3"><a class="nav-link" href="javascript:void(0)" onclick="refresh()"><span class=""><i class="fa-solid fa-arrows-rotate"></i> 刷新</span></a></li>
+            <li class="nav-item mb-3"><a class="nav-link" href="javascript:void(0)" onclick="modal_rule(); close_offcanvas();"><span class=""><i class="fa-regular fa-circle-question"></i> 遊戲說明</span></a></li>
+
+            <li class="nav-item mb-3 room_player" style="display: none;"><a class="nav-link" href="javascript:void(0)" style="background-color: #ffefef;" onclick="modal_leave(); close_offcanvas();"><span class=""><i class="fa-solid fa-bomb"></i> 離開房間</span></a></li>
+            <li class="nav-item mb-3 room_owner" style="display: none;"><a class="nav-link" href="javascript:void(0)" style="background-color: #ffefef;" onclick="reset_game(); close_offcanvas();"><span class=""><i class="fa-solid fa-bomb"></i> 開新局</span></a></li>
+
+            <li class="nav-item mb-3"><a class="nav-link" href="javascript:void(0)" style="background-color: #fdd6d6;" onclick="modal_clear_storage(); close_offcanvas();"><span class=""><i class="fa-solid fa-right-from-bracket"></i> 登出平台</span></a></li>
         </ul>
     </div>
 </nav>
@@ -474,7 +91,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col">
-            <button type="button" data-trigger="navbar_main" class="d-xxl-none btn btn-outline-primary fs-4" style="line-height: 0;"><i class="fa-solid fa-angles-right"></i></button>
+            <button type="button" data-trigger="navbar_main" class="d-xxl-none btn btn-sm btn-outline-primary" style="line-height: 0;"><i class="fa-solid fa-angles-right"></i></button>
         </div>
         <div class="col"></div>
     </div>
@@ -548,37 +165,70 @@
 </div>
 
 <!-- ---------------- HOST ---------------- -->
-<div class="area" id="area_view" style="display: none; overflow-x: hidden;">
+<!-- 等待中 -->
+<div class="area" id="area_host_room" style="display: none; overflow-x: hidden;">
+    <div class="container-fluid pt-3" style="background-color: #fff; padding-bottom: 1rem;">
+        <div class="row mb-3">
+            <!-- QR code -->
+            <div class="col-6">
+                <!--<button class="btn btn-warning" onclick="modal_qrcode()">QR code</button>-->
+                <div id="id_qrcode"></div>
+                <div id="id_qrcode_text" class="text-center"></div>
+            </div>
+
+            <div class="col-6 ">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-3 text-end">
+                            <button type="button" class="btn btn-outline-danger" onclick="reset_game()">開新局</button>
+                        </div>
+
+                        <button class="btn btn-primary mb-3 col-12" onclick="start_game()">開始</button>
+                        <div id="id_room_wait_total" class="text-center" style="font-size: 3rem; font-weight: bold;">0</div>
+                        <div id="id_room_wait_player"></div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--  -->
+<div class="area" id="area_viewer" style="display: none; overflow-x: hidden;">
 
     <div class="container" style="background-color: #fff; padding-bottom: 1rem;">
 
         <!--  -->
-        <div class="row">
-            <div class="col-12">
-                <div class="text-center">
-
-                    <!--  -->
-                    <div id="id_view_question_number" class="p-3"></div>
-                </div>
-            </div>
-        </div>
+        <!--<div class="row">-->
+        <!--    <div class="col-12">-->
+        <!--        <div class="text-center">-->
+        <!--            &lt;!&ndash;  &ndash;&gt;-->
+        <!--            <div id="id_view_question_number" class="p-3"></div>-->
+        <!--        </div>-->
+        <!--    </div>-->
+        <!--</div>-->
 
         <!--  -->
         <div class="row shadow p-3 mb-4 text-center">
+            <div class="col text-center">
+                <div>倒數：<span id="id_player_score" style="font-size: 1.5rem;"></span></div>
+            </div>
+
             <div class="col">
                 <div>回答人數</div>
                 <div>
-                    <span id="id_player_question_answer" class="fs-3">0</span> / <span class="total_player"></span>
+                    <span id="id_player_question_answer" class="fs-3">0</span> / <span id="id_total_player_join" class="total_player">0</span>
                 </div>
             </div>
-            <div class="col">
-                <div>答<span style="color: #4f9f12; font-size: 1.5rem; font-weight: bold;">對</span>人數</div>
-                <div><span id="id_player_answer_correct" class="fs-3">0</span></div>
-            </div>
-            <div class="col">
-                <div>答<span style="color: #d02525; font-size: 1.5rem; font-weight: bold;">錯</span>人數</div>
-                <div><span id="id_player_answer_wrong" class="fs-3">0</span></div>
-            </div>
+            <!--<div class="col">-->
+            <!--    <div>答<span style="color: #4f9f12; font-size: 1.5rem; font-weight: bold;">對</span>人數</div>-->
+            <!--    <div><span id="id_player_answer_correct" class="fs-3">0</span></div>-->
+            <!--</div>-->
+            <!--<div class="col">-->
+            <!--    <div>答<span style="color: #d02525; font-size: 1.5rem; font-weight: bold;">錯</span>人數</div>-->
+            <!--    <div><span id="id_player_answer_wrong" class="fs-3">0</span></div>-->
+            <!--</div>-->
         </div>
 
         <div class="row shadow mb-4">
@@ -623,14 +273,14 @@
 </div>
 
 <!-- 進入 -->
-<div class="area" id="area_play" style="display: none; overflow-x: hidden;">
+<div class="area" id="area_player" style="display: none; overflow-x: hidden;">
 
     <div class="container" style="background-color: #fff; padding-bottom: 2rem;">
 
         <div class="row">
-            <div class="col-12 text-center">
-                <div>倒數：<span id="id_player_score" style="font-size: 1.5rem;"></span></div>
-            </div>
+            <!--<div class="col-12 text-center">-->
+            <!--    <div>倒數：<span id="id_player_score" style="font-size: 1.5rem;"></span></div>-->
+            <!--</div>-->
 
             <div class="col-12">
                 <div class="p-2 shadow-lg ">
@@ -648,7 +298,7 @@
 </div>
 
 <!-- HOST viewer finish -->
-<div class="area" id="area_view_finish" style="display: none; overflow-x: hidden;">
+<div class="area" id="area_viewer_finish" style="display: none; overflow-x: hidden;">
 
     <div class="container" style="background-color: #fff; padding-bottom: 2rem;">
 
@@ -703,36 +353,6 @@
                                 <button class="btn btn-outline-secondary" type="button" id="button-addon2" onclick="random_room_name()">隨機</button>
                             </div>
 
-                            <!--<div class="mb-2">-->
-                            <!--    <label for="id_set_subject" class="col-12 col-form-label">科目</label>-->
-                            <!--    <div class="col-12">-->
-                            <!--        <select name="subject" id="id_set_subject" class="form-control text-center"><option value="177">PTT 企業綽號</option>-->
-                            <!--            <option value="178">台灣古蹟、景點</option>-->
-                            <!--            <option value="179">宮崎駿動畫電影人物</option>-->
-                            <!--            <option value="180">台灣縣市市徽</option>-->
-                            <!--            <option value="196">OPEN 醬是什麼動物你知道嗎？關於 7-11 的10個冷知識！</option>-->
-                            <!--            <option value="197">197</option>-->
-                            <!--            <option value="200">200</option>-->
-                            <!--        </select>-->
-                            <!--    </div>-->
-                            <!--</div>-->
-
-                            <!--<div class="mb-2">-->
-                            <!--    <label for="id_question_number" class="col-12 col-form-label">題數</label>-->
-                            <!--    <div class="col-12">-->
-                            <!--        <select name="question_number" id="id_question_number" class="form-control text-center">-->
-                            <!--            <option value="3">3</option>-->
-                            <!--            <option value="5" selected>5</option>-->
-                            <!--            <option value="10">10</option>-->
-                            <!--            <option value="20">20</option>-->
-                            <!--            <option value="30">30</option>-->
-                            <!--            <option value="40">40</option>-->
-                            <!--            <option value="50">50</option>-->
-                            <!--            <option value="60">60</option>-->
-                            <!--        </select>-->
-                            <!--    </div>-->
-                            <!--</div>-->
-
                             <div class="mb-2">
                                 <label for="id_join_number" class="col-12 col-form-label">人數</label>
                                 <div class="col-12">
@@ -754,7 +374,8 @@
                                 <div class="col-12">
                                     <select name="answer_time" id="id_answer_time" class="form-control text-center">
                                         <option value="10">每題 10 秒</option>
-                                        <option value="20" selected>每題 20 秒</option>
+                                        <option value="15" selected>每題 15 秒</option>
+                                        <option value="20">每題 20 秒</option>
                                         <option value="30">每題 30 秒</option>
                                         <option value="45">每題 45 秒</option>
                                         <option value="60">每題一分鐘</option>
@@ -805,20 +426,76 @@
 </div>
 
 <!--  -->
-<div id="modal_qrcode" class="modal fade" data-bs-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog modal-fullscreen">
+<div id="modal_leave" class="modal" data-keyboard="false" tabindex="-1" aria-labelledby="" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-
             <div class="modal-body">
-               <div id="id_qrcode"></div>
-               <div id="id_qrcode_text"></div>
+                <form id="id_form_leave" autocomplete="off">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                        </div>
+                        <div class="col text-end">
+                            <button type="button" class="btn btn-outline-danger" onclick="submit_leave()">確定離開！</button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
+
+<!--  -->
+<div id="modal_reset_game" class="modal" data-keyboard="false" tabindex="-1" aria-labelledby="" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <form id="id_form_reset_game" autocomplete="off">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                        </div>
+                        <div class="col text-end">
+                            <button type="button" class="btn btn-outline-danger" onclick="submit_reset_game()">確定開新局！</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--  -->
+<div id="modal_rule" class="modal" data-keyboard="false" tabindex="-1" aria-labelledby="" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--  -->
+<div id="modal_clear_storage" class="modal" data-keyboard="false" tabindex="-1" aria-labelledby="" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <form id="id_form_clear_storage" autocomplete="off">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                        </div>
+                        <div class="col text-end">
+                            <button type="button" class="btn btn-outline-danger" onclick="submit_clear_storage()">確定登出！</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <script src="php.js?v=65cd879be1395"></script>
 
@@ -835,16 +512,7 @@
     else{
         client_id = window.localStorage.client_id;
     }
-    room_id = window.localStorage.client_id;
-
-    // const qrcode = new QRCode("test", {
-    //     text: "http://jindo.dev.naver.com/collie",
-    //     width: qrcode_size,
-    //     height: qrcode_size,
-    //     colorDark : "#000000",
-    //     colorLight : "#ffffff",
-    //     correctLevel : QRCode.CorrectLevel.L // 由低到高 L M Q H
-    // });
+    // room_id = window.localStorage.client_id;
 
     // 運作環境切換
     let environment = 'company';
@@ -875,31 +543,39 @@
 
         }
 
-        // player 進入房間
-        if ($_GET('room_id') === null) {
-            let message = new Paho.MQTT.Message(JSON.stringify({
-                command: "get_status",
-                user_id: window.localStorage.client_id,
-            }));
-            message.destinationName = "MOPCON2024HOYO/server";
-            mc.send(message);
-        } else {
-            // let message = new Paho.MQTT.Message(JSON.stringify({
-            //     command: "get_status",
-            //     user_id: window.localStorage.client_id,
-            // }));
-            // message.destinationName = "MOPCON2024HOYO/server";
-            // mc.send(message);
+        let message = new Paho.MQTT.Message(JSON.stringify({
+            command: "get_status",
+            user_id: window.localStorage.client_id,
+        }));
+        message.destinationName = "MOPCON2024HOYO/server";
+        mc.send(message);
 
-            if ( $identity ==='player' ) {
-                console.log('player');
-                in_room($_GET('room_id'));
-            }
-        }
+        // // player 進入房間
+        // if ($_GET('room_id') === null) {
+        //     let message = new Paho.MQTT.Message(JSON.stringify({
+        //         command: "get_status",
+        //         user_id: window.localStorage.client_id,
+        //     }));
+        //     message.destinationName = "MOPCON2024HOYO/server";
+        //     mc.send(message);
+        // } else {
+        //     let message = new Paho.MQTT.Message(JSON.stringify({
+        //         command: "get_status",
+        //         user_id: window.localStorage.client_id,
+        //     }));
+        //     message.destinationName = "MOPCON2024HOYO/server";
+        //     mc.send(message);
+        //
+        //     // if ( $identity ==='player' ) {
+        //     //     console.log('player');
+        //     //     in_room($_GET('room_id'));
+        //     // }
+        // }
     }
 
     if (environment === 'company') {
-        mc = new Paho.MQTT.Client("broker.hivemq.com", 8884, mqtt_client_id);
+        // mc = new Paho.MQTT.Client("broker.hivemq.com", 8884, mqtt_client_id);
+        mc = new Paho.MQTT.Client("broker.emqx.io", 8084, mqtt_client_id);
         mc.connect({
             onSuccess: onConnect,
             useSSL: true,
@@ -920,6 +596,6 @@
     }
 
 </script>
-<script src="app.js?v=3"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>

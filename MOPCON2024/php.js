@@ -122,7 +122,7 @@ function strlen(string) {
         lgth = 0;
 
     if (!this.php_js || !this.php_js.ini || !this.php_js.ini['unicode.semantics'] || this.php_js.ini[
-            'unicode.semantics'].local_value.toLowerCase() !== 'on') {
+        'unicode.semantics'].local_value.toLowerCase() !== 'on') {
         return string.length;
     }
 
@@ -236,7 +236,7 @@ function strtotime(text, now) {
                     }
 
                     return new Date(match[1], parseInt(match[3], 10) - 1, match[5],
-                            match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1000;
+                        match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1000;
                 }
                 case '.': {
                     // YYYY.M.D is not parsed by strtotime()
@@ -249,7 +249,7 @@ function strtotime(text, now) {
                     }
 
                     return new Date(match[1], parseInt(match[3], 10) - 1, match[5],
-                            match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1000;
+                        match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1000;
                 }
             }
         } else if (match[5] > 1901) {
@@ -261,7 +261,7 @@ function strtotime(text, now) {
                     }
 
                     return new Date(match[5], parseInt(match[3], 10) - 1, match[1],
-                            match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1000;
+                        match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1000;
                 }
                 case '.': {
                     // D.M.YYYY
@@ -270,7 +270,7 @@ function strtotime(text, now) {
                     }
 
                     return new Date(match[5], parseInt(match[3], 10) - 1, match[1],
-                            match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1000;
+                        match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1000;
                 }
                 case '/': {
                     // M/D/YYYY
@@ -279,7 +279,7 @@ function strtotime(text, now) {
                     }
 
                     return new Date(match[5], parseInt(match[1], 10) - 1, match[3],
-                            match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1000;
+                        match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1000;
                 }
             }
         } else {
@@ -292,7 +292,7 @@ function strtotime(text, now) {
 
                     year = match[1] >= 0 && match[1] <= 38 ? +match[1] + 2000 : match[1];
                     return new Date(year, parseInt(match[3], 10) - 1, match[5],
-                            match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1000;
+                        match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1000;
                 }
                 case '.': {
                     // D.M.YY or H.MM.SS
@@ -303,7 +303,7 @@ function strtotime(text, now) {
                         }
 
                         return new Date(match[5], parseInt(match[3], 10) - 1, match[1],
-                                match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1000;
+                            match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1000;
                     }
                     if (match[5] < 60 && !match[6]) {
                         // H.MM.SS
@@ -313,7 +313,7 @@ function strtotime(text, now) {
 
                         today = new Date();
                         return new Date(today.getFullYear(), today.getMonth(), today.getDate(),
-                                match[1] || 0, match[3] || 0, match[5] || 0, match[9] || 0) / 1000;
+                            match[1] || 0, match[3] || 0, match[5] || 0, match[9] || 0) / 1000;
                     }
 
                     // invalid format, cannot be parsed
@@ -327,7 +327,7 @@ function strtotime(text, now) {
 
                     year = match[5] >= 0 && match[5] <= 38 ? +match[5] + 2000 : match[5];
                     return new Date(year, parseInt(match[1], 10) - 1, match[3],
-                            match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1000;
+                        match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1000;
                 }
                 case ':': {
                     // HH:MM:SS
@@ -337,7 +337,7 @@ function strtotime(text, now) {
 
                     today = new Date();
                     return new Date(today.getFullYear(), today.getMonth(), today.getDate(),
-                            match[1] || 0, match[3] || 0, match[5] || 0) / 1000;
+                        match[1] || 0, match[3] || 0, match[5] || 0) / 1000;
                 }
             }
         }
@@ -359,7 +359,7 @@ function strtotime(text, now) {
     //   2015-04-15 20:33:59z
     //   2015-04-15t20:33:59+02:00
     if (match = text.match(
-            /^([0-9]{4}-[0-9]{2}-[0-9]{2})[ t]([0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?)([\+-][0-9]{2}(:[0-9]{2})?|z)/)) {
+        /^([0-9]{4}-[0-9]{2}-[0-9]{2})[ t]([0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?)([\+-][0-9]{2}(:[0-9]{2})?|z)/)) {
         // fix time zone information
         if (match[4] == 'z') {
             match[4] = 'Z';
@@ -439,8 +439,8 @@ function strtotime(text, now) {
     }
 
     times = '(years?|months?|weeks?|days?|hours?|minutes?|min|seconds?|sec' +
-    '|sunday|sun\\.?|monday|mon\\.?|tuesday|tue\\.?|wednesday|wed\\.?' +
-    '|thursday|thu\\.?|friday|fri\\.?|saturday|sat\\.?)';
+        '|sunday|sun\\.?|monday|mon\\.?|tuesday|tue\\.?|wednesday|wed\\.?' +
+        '|thursday|thu\\.?|friday|fri\\.?|saturday|sat\\.?)';
     regex = '([+-]?\\d+\\s' + times + '|' + '(last|next)\\s' + times + ')(\\sago)?';
 
     match = text.match(new RegExp(regex, 'gi'));
@@ -719,8 +719,8 @@ function date(format, timestamp) {
     this.date = function(format, timestamp) {
         that = this;
         jsdate = (timestamp === undefined ? new Date() : // Not provided
-            (timestamp instanceof Date) ? new Date(timestamp) : // JS Date()
-                new Date(timestamp * 1000) // UNIX timestamp (auto-convert to int)
+                (timestamp instanceof Date) ? new Date(timestamp) : // JS Date()
+                    new Date(timestamp * 1000) // UNIX timestamp (auto-convert to int)
         );
         return format.replace(formatChr, formatChrCb);
     };
@@ -871,7 +871,7 @@ function uniqid(prefix, more_entropy) {
         if (reqWidth > seed.length) {
             // so short we pad
             return Array(1 + (reqWidth - seed.length))
-                    .join('0') + seed;
+                .join('0') + seed;
         }
         return seed;
     };
@@ -1199,7 +1199,7 @@ function number_format(number, decimals, dec_point, thousands_sep) {
         toFixedFix = function(n, prec) {
             var k = Math.pow(10, prec);
             return '' + (Math.round(n * k) / k)
-                    .toFixed(prec);
+                .toFixed(prec);
         };
     // Fix for IE parseFloat(0.55).toFixed(0) = 0;
     s = (prec ? toFixedFix(n, prec) : '' + Math.round(n))
@@ -1208,7 +1208,7 @@ function number_format(number, decimals, dec_point, thousands_sep) {
         s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
     }
     if ((s[1] || '')
-            .length < prec) {
+        .length < prec) {
         s[1] = s[1] || '';
         s[1] += new Array(prec - s[1].length + 1)
             .join('0');

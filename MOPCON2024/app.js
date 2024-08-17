@@ -3,7 +3,7 @@ let s = 0;
 let $width, $height;
 let $id_show = $('#id_show');
 let $question_order = 0; // 目前題序
-let $answered = 0;
+let $answered = 0; // 回答人數
 let $room_score = 0;
 let $n = 0;
 let $countdown_inter; // 倒數事件
@@ -17,10 +17,6 @@ let $Q = [];
 let in_room_id, dealer, playing, room_people, vid;
 let check_run = '';
 let show_log = true;
-
-if (window.localStorage.status === undefined) {
-    window.localStorage.status = '0';
-}
 
 
 // ============================================================================== //
@@ -43,28 +39,487 @@ mc.onMessageArrived = function (message) {
     if (j['command'] === 'pong') {
     }
 
+    //
+    if (j['command'] === 'player_leave_ok') {
+        let $url = url.origin + url.pathname;
+        window.location.replace($url);
+    }
+
+    if (j['command'] === 'create_room_ok') {
+
+        room_id = j['room_id'];
+
+        $('.area').hide();
+        $('#area_host_room').show();
+
+        $.LoadingOverlay("hide");
+
+        // 退出大廳
+        mc.unsubscribe('MOPCON2024HOYO/lobby', {
+            onSuccess: function () {
+                console.log("退出大廳");
+            },
+        });
+
+        // 訂閱房間
+        mc.subscribe('MOPCON2024HOYO/room/' + j['room_id'], {
+            onSuccess: function () {
+                console.log(j['room_id'] + " room 訂閱房間");
+
+                $('#modal_create_room').modal('hide');
+
+                // 建立房間完成  等待房間
+                wait_room_status();
+
+                // get_lobby();
+            }
+        });
+    }
+
+    //
+    if (j['command'] === 'update_wait_room_player_ok') {
+
+        window.history.replaceState(null, null, "?wait="+ j['room_id']);
+        $('.area').hide();
+        $('#area_host_room').show();
+
+        let p = '';
+        let p_i = 0;
+
+        // 所有人列表
+        p += '<div class="mt-3 px-3 py-2 shadow-sm" style="max-height: 64px; overflow-y: auto;">';
+        $.each(j['room_user'], function (k, v) {
+            p += '<span class="user_list_user_name">' + v['user_name'] + '</span>';
+            p_i += 1;
+        });
+        p += '</div>';
+
+        $('#id_room_wait_total').html(p_i);
+        $('#id_room_wait_player').html(p);
+    }
+
+    //
+    if (j['command'] === 'wait_room_status_ok') {
+
+        window.history.replaceState(null, null, "?wait="+ j['room_id']);
+        $('.area').hide();
+        $('#area_host_room').show();
+
+        let p = '';
+        let p_i = 0;
+
+        // 所有人列表
+        $.each(j['room_user'], function (k, v) {
+            p += '<div class="mt-3 px-3 py-2 shadow-sm" style="max-height: 64px; overflow-y: auto;">';
+            p += '<span class="user_list_user_name">' + v['user_name'] + '</span>';
+            p += '</div>';
+
+            p_i += 1;
+        });
+
+        $('#id_room_wait_total').html(p_i);
+        $('#id_room_wait_player').html(p);
+
+        // 判斷是否顯示 QR code
+        if ( $('#id_qrcode_text').text() === '' ){
+            let $url = url.origin + url.pathname + '?room_id=' + $_GET('wait');
+            $('#id_qrcode').html('');
+            $('#id_qrcode_text').html('<a href="'+ $url +'" style="font-size: 1.5rem; color: #000;">'+ $url +'</a>');
+            $('#modal_qrcode').modal('show');
+
+            let qrcode_size = (window.innerWidth / 2 >= window.innerHeight - 48? window.innerHeight -48 :window.innerWidth /2) -80;
+            let qrcode = new QRCode('id_qrcode', {
+                text: $url,
+                width: qrcode_size,
+                height: qrcode_size,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.L // 由低到高 L M Q H
+            });
+        }
+    }
+
+    //
+    if (j['command'] === 'start_game_ok') {
+
+        // 倒數計時
+        $room_score = j['room']['AnswerTime'];
+
+        // 退出大廳
+        mc.unsubscribe('MOPCON2024HOYO/lobby', {
+            onSuccess: function () {
+                console.log("lobby unsubscribe");
+            },
+        });
+
+        // 訂閱房間
+        mc.subscribe('MOPCON2024HOYO/room/' + j['room_id'], {
+            onSuccess: function () {
+                console.log(j['room_id'] + " room subscribe success!");
+
+                $('.area').hide();
+
+                // HOST
+                if ( j['identity'] === 'viewer' ) {
+                    window.history.pushState(null, null, '?q=1');
+                    $('#area_viewer').show();
+                    // viewer_home(j);
+
+                    let message = new Paho.MQTT.Message(JSON.stringify({
+                        command: "question",
+                        user_id: window.localStorage.client_id,
+                        order: 1,
+                    }));
+                    message.destinationName = "MOPCON2024HOYO/server";
+                    mc.send(message);
+                }
+
+                // 玩家
+                if ( j['identity'] === 'player' ) {
+                    window.history.pushState(null, null, '?room_id=' + j['room_id']);
+                    $('#area_player').show();
+                }
+
+                //
+                // $question_order = j['question']['Order'];
+                // $('.question_count').eq($question_order-1).addClass('active');
+                //
+                // // console.log(j['question'][0]['Question']);
+                // let $Q = JSON.parse(j['question']['Question']);
+                // // console.log($Q);
+                // show_question($Q);
+            }
+        });
+
+    }
+
+    // 重新整理時  取得目前玩家狀態
+    if (j['command'] === 'get_status_ok') {
+
+        $identity = j['identity'];
+
+        console.log(date('Y-m-d H:i:s'), j['room_id']);
+
+        // 中途退出  重新進入
+        if ( j['room_id'] ) {
+
+            // 退出大廳
+            mc.unsubscribe('MOPCON2024HOYO/lobby', {
+                onSuccess: function () {
+                    console.log("退出大廳");
+                },
+            });
+
+            // 訂閱房間
+            mc.subscribe('MOPCON2024HOYO/room/' + j['room_id'], {
+                onSuccess: function (){
+                    console.log(j['room_id'] + ' 訂閱房間');
+                },
+            });
+
+            $('.area').hide();
+
+            // 儲存題號
+            // $question_id = j['question']['Question']['question_code'];
+            // console.log(j['identity']);
+
+            // HOST
+            if ( j['identity'] === 'viewer' ) {
+
+                $('.room_player').hide();
+                $('.room_owner').show();
+                $('#area_viewer').show();
+
+                // console.log(url.pathname);
+                // 無控制 根據最後狀態
+                if ( substr(url.pathname, -1) ==='/' ){
+                    if ( j['room']['Status'] === 1 ){
+                        if ( j['room']['Process'] === 'Q' ){
+                            let message = new Paho.MQTT.Message(JSON.stringify({
+                                command: "question",
+                                user_id: window.localStorage.client_id,
+                                order: $_GET('q'),
+                            }));
+                            message.destinationName = "MOPCON2024HOYO/server";
+                            mc.send(message);
+                        }
+                    }
+                }
+
+                // 正答
+                if ( $_GET('a') ) {
+                    let message = new Paho.MQTT.Message(JSON.stringify({
+                        command: "analyze",
+                        user_id: window.localStorage.client_id,
+                        order: $_GET('a'),
+                    }));
+                    message.destinationName = "MOPCON2024HOYO/server";
+                    mc.send(message);
+                }
+
+                // HOST 題目
+                if ( $_GET('q') ) {
+                    console.log('q');
+
+                    let message = new Paho.MQTT.Message(JSON.stringify({
+                        command: "question",
+                        user_id: window.localStorage.client_id,
+                        order: $_GET('q'),
+                    }));
+                    message.destinationName = "MOPCON2024HOYO/server";
+                    mc.send(message);
+                }
+
+                if ( $_GET('wait') ) {
+                    wait_room_status();
+                }
+
+                // HOST 解答
+                if( $_GET('analyze') ){
+                    console.log('analyze');
+
+                    let message = new Paho.MQTT.Message(JSON.stringify({
+                        command: "analyze",
+                        user_id: window.localStorage.client_id,
+                        order: $_GET('analyze'),
+                    }));
+                    message.destinationName = "MOPCON2024HOYO/server";
+                    mc.send(message);
+                }
+
+                // else {
+                //     console.log('aaa');
+                //
+                //     viewer_home(j);
+                //
+                //     $.LoadingOverlay("show", {
+                //         background: "rgba(100,100,100,0.1)",
+                //         size: "8",
+                //         imageAnimation : "3000ms rotate_right",
+                //         fade : false,
+                //     });
+                //
+                //     let message = new Paho.MQTT.Message(JSON.stringify({
+                //         command: "question",
+                //         order: parseInt(j['room']['NowQuestion']),
+                //     }));
+                //     message.destinationName = "MOPCON2024HOYO/server";
+                //     mc.send(message);
+                // }
+            }
+
+            // 玩家
+            if ( j['identity'] === 'player' ) {
+                $('.room_owner').hide();
+                $('.room_player').show();
+                $('#area_player').show();
+
+                if ( j['room']['Process'] ==='wait' ){
+                    in_room(j['room_id']);
+                }
+
+                //
+                // $('#area_play').show();
+                //
+                // $('.user_total_score').html(number_format(j['total_score'], 2));
+                // $answered = j['answered'];
+                //
+                // $.LoadingOverlay("show", {
+                //     background: "rgba(100,100,100,0.1)",
+                //     size: "8",
+                //     imageAnimation : "3000ms rotate_right",
+                //     fade : false,
+                // });
+                //
+                // let message = new Paho.MQTT.Message(JSON.stringify({
+                //     command: "question",
+                //     order: parseInt(j['room']['NowQuestion']),
+                // }));
+                // message.destinationName = "MOPCON2024HOYO/server";
+                // mc.send(message);
+            }
+
+            // $question_order = j['question']['Order'];
+            // $('.question_count').eq($question_order-1).addClass('active');
+            //
+            // console.log(j['question'][0]['Question']);
+            // let $Q = JSON.parse(j['question']['Question']);
+            // console.log($Q);
+            // show_question($Q);
+        }
+
+        else {
+            if (window.localStorage.username) {
+                get_lobby();
+            }
+            else {
+                $('.area').hide();
+                $('#area_join').show();
+            }
+        }
+    }
+
+    // 大廳
+    if (j['command'] === 'get_lobby_ok' ) {
+
+        // HOST 房間等待
+        if (  j['room_id'] ) {
+            $('.area').hide();
+            $('#area_host_room').show();
+
+            wait_room_status();
+        }
+
+        //
+        // if ( $_GET('wait') && window.localStorage.client_id === v['room']['OwnerId'] ) {
+        //     return false;
+        // }
+
+        //
+        // if (  window.localStorage.status === '0' ) {
+
+        $('.area').hide();
+        $('#area_room').show();
+        $('#room_list').html('');
+
+        $.each(j['room_list'], function (k, v) {
+
+            console.log(v);
+            room_people = '';
+
+            room_people += '<div class="room">';
+
+            let $subject = '';
+
+            if (v['OwnerId'] === window.localStorage.client_id) room_people += '<div class="text-end"><button class="btn btn-outline-danger col-4" onclick="reset_game()">刪除此空間</button></div>';
+
+            room_people += '<div style="min-height: 36px;"><span class="fa-stack" style="vertical-align: middle; --fa-inverse: #1da1f2;"><i class="fa-solid fa-circle fa-stack-2x"></i><i class="fa-solid fa-shop fa-stack-1x fa-inverse"></i></span> ' + v['name'] + '</div>';
+
+            // let qrcode_url = url.origin + url.pathname + '?room_id=' + v['room_id'];
+            // room_people += '<div class="" style="min-height: 36px;"><button class="btn btn-warning" onclick="modal_qrcode(\'' + qrcode_url + '\')">QR code</button></div>';
+
+            room_people += '<div id="id_' + v['room_id'] + '_player" class="row mt-2">';
+
+            player_in_room = 0;
+
+            let obj = check_users_array(v['room_user'], client_id);
+            console.log(v['room_user'], client_id, obj);
+
+            if (obj['user_name']) {
+                room_people += '<div class="col-12">';
+                room_people += '<div class="room_people" style="box-shadow: inset 0 0 8px 6px #aba9c0;">';
+                room_people += '<div class="' + v['room_id'] + '" style="color: #999;">' + obj['user_name'] + '</div>';
+                room_people += '</div>';
+                room_people += '</div>';
+            } else {
+                // 非主人
+                if (v['room_id'] !== window.localStorage.client_id) {
+                    room_people += '<div class="col-12" onclick="in_room(\'' + v['room_id'] + '\')">';
+                    room_people += '<div class="room_people">';
+                    room_people += '<div class="' + v['room_id'] + '" style="color: #999;">加入</div>';
+                    room_people += '</div>';
+                    room_people += '</div>';
+                }
+            }
+
+            room_people += '</div>';
+
+            //
+            if (v['room_id'] === window.localStorage.client_id) {
+                room_people += '<div class="col-12"><button class="btn btn-primary col-12" style="height: 3rem;" onclick="start_game()">開始</button></div>';
+            }
+
+            // 所有人列表
+            room_people += '<div id="id_room_' + v['room_id'] + '_user" class="mt-3 px-3 py-2 shadow-sm" style="max-height: 64px; overflow-y: auto;">';
+            $.each(v['room_user'], function (k, v) {
+                room_people += '<span class="user_list_user_name">' + v['user_name'] + '</span>';
+            });
+            room_people += '</div>';
+
+            //
+            room_people += '</div>';
+
+            if ($_GET('room_id') === null) {
+                $('#room_list').append(room_people);
+            } else {
+                in_room(v['room_id']);
+            }
+
+        });
+        // }
+
+        //
+        if ( j['room_list'] !== undefined ) {
+            if (j['room_list'].length === 0) {
+                $('#room_list').html('<div class="p-3 shadow mt-4">目前沒有活動</div>');
+            }
+        }
+    }
+
+    // 接收作答
+    if (j['command'] === 'answer_ok') {
+        $('#id_form_player').find('.student_answer,button').prop('disabled', true);
+
+        // $('.div_answer').attr("disabled", true);
+        // $('.user_total_score').html(number_format(j['total_score'], 2));
+        // $('.user_question_score').html(number_format(j['score'], 2));
+    }
+
+    // 接收統計
+    if (j['command'] === 'question_answer_statistics_ok') {
+        let r = '';
+
+        $('#id_player_question_answer').html(j['answer']['total']);
+        $('#id_player_answer_correct').html(j['answer']['correct']);
+        $('#id_player_answer_wrong').html(j['answer']['wrong']);
+        $('#id_total_player_join').html(j['answer']['total_join']);
+    }
+
+    // 接收試題
+    if (j['command'] === 'question_ok') {
+
+        $('#id_form_player').find('.student_answer,button').prop('disabled', false);
+        $.LoadingOverlay("hide");
+
+        $('.question_count').each(function (k,v){
+            // console.log(k);
+            if ( parseInt(j['order']) === (k+1) ) {
+                $(this).addClass('active');
+            }
+            else{
+                $(this).removeClass('active');
+            }
+        });
+
+        let $Q = JSON.parse(j['question']);
+        // console.log($Q);
+
+        $question_order = j['order'];
+
+        $answered = 0;
+        show_question($Q);
+    }
+
     // 重開新局
     if (j['command'] === 'reset_game_ok') {
-        window.localStorage.in_room = '';
-        window.localStorage.status = '0';
 
         // 退訂房間
         mc.unsubscribe('MOPCON2024HOYO/room/' + j['room_id'], {
             onFailure: function () {},
             onSuccess: function () {
-                console.log(j['room_id'] + " room unsubscribe success!");
+                console.log(j['room_id'] + " room 退訂房間");
             }
         });
 
         // 訂閱大廳
         mc.subscribe('MOPCON2024HOYO/lobby', {
             onSuccess: function (){
-                console.log('lobby subscribe');
+                console.log('訂閱大廳');
             },
             onFailure: function (){}
         });
 
-        // window.location.reload();
+        // console.log(url.origin, url.pathname);
         window.location.replace(url.origin + url.pathname);
     }
 
@@ -119,178 +574,6 @@ mc.onMessageArrived = function (message) {
         $('.finish_question_list').html( parse_show_question(j['question']) );
     }
 
-    // 接收作答
-    if (j['command'] === 'answer_ok') {
-        // $('.div_answer').attr("disabled", true);
-        // $('.user_total_score').html(number_format(j['total_score'], 2));
-        // $('.user_question_score').html(number_format(j['score'], 2));
-    }
-
-    // 接收統計
-    if (j['command'] === 'question_answer_statistics_ok') {
-        let r = '';
-
-        $('#id_player_question_answer').html(j['answer']['total']);
-
-        $('#id_player_answer_correct').html(j['answer']['correct']);
-
-        $('#id_player_answer_wrong').html(j['answer']['wrong']);
-    }
-
-    // 接收試題
-    if (j['command'] === 'question_ok') {
-
-        $('#id_form_player').find('.student_answer,button').prop('disabled', false);
-        $.LoadingOverlay("hide");
-
-        $('.question_count').each(function (k,v){
-            // console.log(k);
-            if ( parseInt(j['order']) === (k+1) ) {
-                $(this).addClass('active');
-            }
-            else{
-                $(this).removeClass('active');
-            }
-        });
-
-        let $Q = JSON.parse(j['question']);
-        // console.log($Q);
-
-        $question_order = j['order'];
-
-        $answered = 0;
-        show_question($Q);
-    }
-
-    // 重新整理時  取得目前玩家狀態
-    if (j['command'] === 'get_status_ok') {
-
-        $identity = j['identity'];
-
-        console.log(date('Y-m-d H:i:s'), j['room_id']);
-
-        if ( j['room_id'] === '' || j['room_id'] === null || j['room_id'] === undefined ) {
-            window.localStorage.status = '0';
-            window.localStorage.in_room = '';
-            // window.location.reload();
-        }
-
-        // 檢查房間是否消失
-        if ( parseInt(window.localStorage.status) === 2 ){
-            if ( j['room_id'] === null || j['room_id'] !== window.localStorage.in_room ) {
-                window.localStorage.status = '0';
-                // window.location.reload();
-            }
-        }
-
-        // 中途退出  重新進入
-        if (window.localStorage.in_room === j['room_id'] && j['room_status'] === 1) {
-
-            // 退出大廳
-            mc.unsubscribe('MOPCON2024HOYO/lobby', {
-                onSuccess: function () {
-                    console.log("lobby unsubscribe");
-                },
-            });
-
-            // 訂閱房間
-            mc.subscribe('MOPCON2024HOYO/room/' + j['room_id'], {
-                onSuccess: function (){
-                    console.log(j['room_id'] + ' room subscribe');
-                },
-            });
-
-            $('.area').hide();
-
-            // 儲存題號
-            // $question_id = j['question']['Question']['question_code'];
-
-            $room_score = j['room']['AnswerTime'];
-
-            console.log(j['identity']);
-
-            // HOST
-            if ( j['identity'] === 'viewer' ) {
-                $('#area_view').show();
-
-                if ( $_GET('order') ) {
-                    console.log('order');
-                    let message = new Paho.MQTT.Message(JSON.stringify({
-                        command: "set_order",
-                        room_id: window.localStorage.in_room,
-                        order: $_GET('order'),
-                    }));
-                    message.destinationName = "MOPCON2024HOYO/server";
-                    mc.send(message);
-                }
-                else if( $_GET('analyze') ){
-                    console.log('analyze');
-                }
-                else {
-                    console.log('aaa');
-
-                    viewer_home(j);
-
-                    $.LoadingOverlay("show", {
-                        background: "rgba(100,100,100,0.1)",
-                        size: "8",
-                        imageAnimation : "3000ms rotate_right",
-                        fade : false,
-                    });
-
-                    let message = new Paho.MQTT.Message(JSON.stringify({
-                        command: "question",
-                        room_id: window.localStorage.in_room,
-                        order: parseInt(j['room']['NowQuestion']),
-                    }));
-                    message.destinationName = "MOPCON2024HOYO/server";
-                    mc.send(message);
-                }
-            }
-
-            // 玩家
-            if ( j['identity'] === 'player' ) {
-                $('#area_play').show();
-
-                $('.user_total_score').html(number_format(j['total_score'], 2));
-                $answered = j['answered'];
-
-                $.LoadingOverlay("show", {
-                    background: "rgba(100,100,100,0.1)",
-                    size: "8",
-                    imageAnimation : "3000ms rotate_right",
-                    fade : false,
-                });
-
-                let message = new Paho.MQTT.Message(JSON.stringify({
-                    command: "question",
-                    room_id: window.localStorage.in_room,
-                    order: parseInt(j['room']['NowQuestion']),
-                }));
-                message.destinationName = "MOPCON2024HOYO/server";
-                mc.send(message);
-            }
-
-            // $question_order = j['question']['Order'];
-            // $('.question_count').eq($question_order-1).addClass('active');
-
-            // console.log(j['question'][0]['Question']);
-            // let $Q = JSON.parse(j['question']['Question']);
-            // console.log($Q);
-            // show_question($Q);
-        }
-
-        else {
-            if (window.localStorage.username) {
-                get_lobby();
-            }
-            else {
-                $('.area').hide();
-                $('#area_join').show();
-            }
-        }
-    }
-
     //
     if (j['command'] === 'join_ok') {
         $('.area').hide();
@@ -299,10 +582,14 @@ mc.onMessageArrived = function (message) {
     }
 
     // in room
+    if ( j['command'] === 'in_room_wait_player_ok' ) {
+        $('#id_wait_peoples').html(j['peoples']);
+    }
+
+    // in room
     if ( j['command'] === 'in_room_ok' ) {
 
-        window.localStorage.status = '2';
-        window.localStorage.in_room = j['room_id'];
+        window.history.pushState(null, null, '?room_id=' + j['room_id']);
 
         // 退出大廳
         mc.unsubscribe('MOPCON2024HOYO/lobby', {
@@ -317,12 +604,10 @@ mc.onMessageArrived = function (message) {
                 console.log(j['room_id'] + ' room subscribe');
 
                 $('.area').hide();
-
-                // 玩家
-                // if ( j['identity'] === 'player' ) {
-                //     $('#area_play').show();
-                // }
-
+                $('#area_room_wait').show();
+                $('.wait_message').hide();
+                $('#id_wait_message_ok').show();
+                $('#id_wait_peoples').html(j['peoples']);
 
                 if ( j['room'] ){
                     if ( j['room']['Status'] === 1 ) {
@@ -337,7 +622,7 @@ mc.onMessageArrived = function (message) {
 
                         let message = new Paho.MQTT.Message(JSON.stringify({
                             command: "question",
-                            room_id: window.localStorage.in_room,
+                            user_id: window.localStorage.client_id,
                             order: j['room']['NowQuestion'],
                         }));
                         message.destinationName = "MOPCON2024HOYO/server";
@@ -345,10 +630,6 @@ mc.onMessageArrived = function (message) {
                     }
                 }
                 else{
-                    $('#area_room_wait').show();
-                    $('.wait_message').hide();
-                    $('#id_wait_message_ok').show();
-                    $('#id_wait_peoples').html(j['peoples']);
                 }
 
                 // $room_score = j['room']['AnswerTime'];
@@ -379,17 +660,22 @@ mc.onMessageArrived = function (message) {
         }
     }
 
-    // $_GET('order')
-    if (j['command'] === 'set_order_ok' ) {
+    // $_GET('q')
+    if (j['command'] === 'assign_question_ok' ) {
         viewer_home(j);
 
         let message = new Paho.MQTT.Message(JSON.stringify({
             command: "question",
-            room_id: window.localStorage.in_room,
+            user_id: window.localStorage.client_id,
             order: j['room']['NowQuestion'],
         }));
         message.destinationName = "MOPCON2024HOYO/server";
         mc.send(message);
+    }
+
+    // $_GET('analyze')
+    if (j['command'] === 'analyze_ok' ) {
+        viewer_analyze(j);
     }
 
     // 大廳 房間使用者列表
@@ -400,149 +686,6 @@ mc.onMessageArrived = function (message) {
         });
 
         $('#id_room_'+ v['room_id'] +'_user').html(room_people);
-    }
-
-    // 大廳
-    if (j['command'] === 'get_lobby_ok' ) {
-
-        $('.area').hide();
-        $('#area_room').show();
-
-        $('#room_list').html('');
-
-        $.each(j['room_list'], function (k, v) {
-
-            console.log(v);
-            room_people = '';
-
-            room_people += '<div class="room">';
-
-            let $subject = '';
-
-            if ( v['room_id'] === window.localStorage.client_id ) room_people += '<div class="text-end"><button class="btn btn-outline-danger col-4" onclick="reset_game(\''+ v['room_id'] +'\')">刪除此空間</button></div>';
-
-            room_people += '<div style="min-height: 36px;"><span class="fa-stack" style="vertical-align: middle; --fa-inverse: #1da1f2;"><i class="fa-solid fa-circle fa-stack-2x"></i><i class="fa-solid fa-shop fa-stack-1x fa-inverse"></i></span> ' + v['name'] + '</div>';
-
-            let qrcode_url = url.origin + url.pathname + '?room_id=' + v['room_id'];
-            room_people += '<div class="" style="min-height: 36px;"><button class="btn btn-warning" onclick="modal_qrcode(\''+ qrcode_url +'\')">QR code</button></div>';
-
-            room_people += '<div id="id_' + v['room_id'] + '_player" class="row mt-2">';
-
-            player_in_room = 0;
-
-            let obj = check_users_array(v['room_user'], client_id);
-            console.log(v['room_user'], client_id, obj);
-
-            if ( obj['user_name'] ) {
-                room_people += '<div class="col-12">';
-                room_people += '<div class="room_people" style="box-shadow: inset 0 0 8px 6px #aba9c0;">';
-                room_people += '<div class="' + v['room_id'] + '" style="color: #999;">'+ obj['user_name'] +'</div>';
-                room_people += '</div>';
-                room_people += '</div>';
-            }
-            else{
-                // 非主人
-                if (v['room_id'] !== window.localStorage.client_id) {
-                    room_people += '<div class="col-12" onclick="in_room(\'' + v['room_id'] + '\')">';
-                    room_people += '<div class="room_people">';
-                    room_people += '<div class="' + v['room_id'] + '" style="color: #999;">加入</div>';
-                    room_people += '</div>';
-                    room_people += '</div>';
-                }
-            }
-
-            room_people += '</div>';
-
-            //
-            if (v['room_id'] === window.localStorage.client_id) {
-                room_people += '<div class="col-12"><button class="btn btn-primary col-12" style="height: 3rem;" onclick="start_game(\'' + v['room_id'] + '\')">開始</button></div>';
-            }
-
-            // 所有人列表
-            room_people += '<div id="id_room_'+ v['room_id'] +'_user" class="mt-3 px-3 py-2 shadow-sm" style="max-height: 64px; overflow-y: auto;">';
-            $.each(v['room_user'], function (k,v){
-                room_people += '<span class="user_list_user_name">'+ v['user_name'] +'</span>';
-            });
-            room_people += '</div>';
-
-            //
-            room_people += '</div>';
-
-            if ( $_GET('room_id') ===null ) {
-                $('#room_list').append(room_people);
-            }
-            else{
-                in_room(v['room_id']);
-            }
-        });
-
-        //
-        if ( j['room_list'] !== undefined ) {
-            if (j['room_list'].length === 0) {
-                $('#room_list').html('<div class="p-3 shadow mt-4">目前沒有活動</div>');
-            }
-        }
-    }
-
-    //
-    if (j['command'] === 'create_room_ok') {
-
-        $.LoadingOverlay("hide");
-
-        // 訂閱房間
-        mc.subscribe('MOPCON2024HOYO/room/' + j['room_id'], {
-            onSuccess: function () {
-                console.log(j['room_id'] + " room subscribe success!");
-            }
-        });
-
-        $('#modal_create_room').modal('hide');
-        get_lobby();
-    }
-
-    //
-    if (j['command'] === 'start_game_ok') {
-
-        window.localStorage.status = '2';
-
-        // 退出大廳
-        mc.unsubscribe('MOPCON2024HOYO/lobby', {
-            onSuccess: function () {
-                console.log("lobby unsubscribe");
-            },
-        });
-
-        // 訂閱房間
-        mc.subscribe('MOPCON2024HOYO/room/' + j['room_id'], {
-            onSuccess: function () {
-                console.log(j['room_id'] + " room subscribe success!");
-
-                $('.area').hide();
-
-                // HOST
-                if ( j['identity'] === 'viewer' ) {
-                    window.localStorage.in_room = j['room_id'];
-                    $('#area_view').show();
-                    viewer_home(j);
-                }
-
-                // 玩家
-                if ( j['identity'] === 'player' ) {
-                    $('#area_play').show();
-                }
-
-                $room_score = j['room']['AnswerTime'];
-
-                $question_order = j['question']['Order'];
-                $('.question_count').eq($question_order-1).addClass('active');
-
-                // console.log(j['question'][0]['Question']);
-                let $Q = JSON.parse(j['question']['Question']);
-                // console.log($Q);
-                show_question($Q);
-            }
-        });
-
     }
 
     //
@@ -567,27 +710,28 @@ mc.onMessageArrived = function (message) {
 
 }
 
-function modal_qrcode($url){
-    $('#id_qrcode').html('');
-    $('#id_qrcode_text').html('<a href="'+ $url +'">'+ $url +'</a>');
-    $('#modal_qrcode').modal('show');
-
-    let qrcode_size = (window.innerWidth >= window.innerHeight - 36? window.innerHeight -36 :window.innerWidth) -80;
-    let qrcode = new QRCode('id_qrcode', {
-        text: $url,
-        width: qrcode_size,
-        height: qrcode_size,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.L // 由低到高 L M Q H
-    });
-}
+// function modal_qrcode(){
+//     let $url = url.origin + url.pathname + '?room_id=' + $_GET('wait');
+//     $('#id_qrcode').html('');
+//     $('#id_qrcode_text').html('<a href="'+ $url +'" style="font-size: 1.5rem; color: #000;">'+ $url +'</a>');
+//     $('#modal_qrcode').modal('show');
+//
+//     let qrcode_size = (window.innerWidth >= window.innerHeight - 48? window.innerHeight -48 :window.innerWidth) -80;
+//     let qrcode = new QRCode('id_qrcode', {
+//         text: $url,
+//         width: qrcode_size,
+//         height: qrcode_size,
+//         colorDark: "#000000",
+//         colorLight: "#ffffff",
+//         correctLevel: QRCode.CorrectLevel.L // 由低到高 L M Q H
+//     });
+// }
 
 // 得分顯示 解析
 function parse_question(){
     let message = new Paho.MQTT.Message(JSON.stringify({
         command: "parse_question",
-        room_id: window.localStorage.in_room,
+        user_id: window.localStorage.client_id,
         order: $question_order,
     }));
     message.destinationName = "MOPCON2024HOYO/server";
@@ -597,11 +741,16 @@ function parse_question(){
 function next(){
     let message = new Paho.MQTT.Message(JSON.stringify({
         command: "question",
-        room_id: window.localStorage.in_room,
+        user_id: window.localStorage.client_id,
         order: parseInt($question_order) +1,
     }));
     message.destinationName = "MOPCON2024HOYO/server";
     mc.send(message);
+}
+
+//
+function viewer_analyze(j){
+
 }
 
 //
@@ -637,7 +786,7 @@ function viewer_home(j){
 
         let message = new Paho.MQTT.Message(JSON.stringify({
             command: "question",
-            room_id: window.localStorage.in_room,
+            user_id: window.localStorage.client_id,
             order: $(this).data('value'),
         }));
         message.destinationName = "MOPCON2024HOYO/server";
@@ -648,10 +797,20 @@ function viewer_home(j){
 }
 
 // 交卷
+function wait_room_status(){
+    let message = new Paho.MQTT.Message(JSON.stringify({
+        command: "wait_room_status",
+        user_id: window.localStorage.client_id,
+    }));
+    message.destinationName = "MOPCON2024HOYO/server";
+    mc.send(message);
+}
+
+// 交卷
 function finish(){
     let message = new Paho.MQTT.Message(JSON.stringify({
         command: "finish",
-        room_id: window.localStorage.in_room,
+        user_id: window.localStorage.client_id,
     }));
     message.destinationName = "MOPCON2024HOYO/server";
     mc.send(message);
@@ -677,6 +836,8 @@ function show_question($Q){
     $answer_type = $Q['type'];
 
     $.each($Q['answer'], function (k, v) {
+
+        // 單選
         if ( $Q['type'] === 1 ) {
             answer_player += '<input type="radio" id="answer_radio_' + k + '" class="btn-check student_answer" name="answer" value="' + (k + 1) + '" data-validation-engine="validate[required]"> <label for="answer_radio_' + k + '" class="btn btn-light py-3 border mb-1 d-block">' + v + '</label>';
 
@@ -685,6 +846,7 @@ function show_question($Q){
             // answer += '<button type="button" class="btn text-start mt-2 btn btn-outline-secondary w-100 div_answer" data-value="' + (k + 1) + '"><div class="d-inline-block float-left align-top">' + v + '</div></button>';
         }
 
+        // 多選
         if ( $Q['type'] === 2 ) {
             answer_player += '<input type="checkbox" id="answer_checkbox_' + k + '" class="btn-check student_answer" name="answer[]" value="' + (k + 1) + '" data-validation-engine="validate[required]"><label for="answer_checkbox_' + k + '" class="btn btn-light py-3 border mb-1 d-block">' + v + '</label>';
 
@@ -693,7 +855,6 @@ function show_question($Q){
             // answer += '<button type="button" class="btn text-start mt-2 btn btn-outline-secondary w-100 div_answer" data-value="' + (k + 1) + '"><div class="d-inline-block float-left align-top">' + v + '</div></button>';
         }
     });
-
 
     $('#id_answer_host').html(answer_host);
     $('#id_answer_player').html(answer_player);
@@ -718,11 +879,8 @@ function show_question($Q){
 
                 student_answer = trim(student_answer , ',');
 
-                $('#id_form_player').find('.student_answer,button').prop('disabled', true);
-
                 let message = new Paho.MQTT.Message(JSON.stringify({
                     command: "answer",
-                    room_id: window.localStorage.in_room,
                     user_id: window.localStorage.client_id,
                     order: $question_order,
                     answer: student_answer,
@@ -759,7 +917,6 @@ function show_question($Q){
     //
     //     let message = new Paho.MQTT.Message(JSON.stringify({
     //         command: "answer",
-    //         room_id: window.localStorage.in_room,
     //         user_id: window.localStorage.client_id,
     //         order: $question_order,
     //         answer: $(this).data('value'),
@@ -895,25 +1052,20 @@ function random_room_name(){
 function start_game() {
     let message = new Paho.MQTT.Message(JSON.stringify({
         command: "start_game",
-        room_id: room_id,
-        user_id: client_id,
+        user_id: window.localStorage.client_id,
     }));
     message.destinationName = "MOPCON2024HOYO/server";
     mc.send(message);
 }
 
-// 重新遊戲
-function reset_game($room_id) {
-    $room_id = $room_id || window.localStorage.in_room;
+// 重新遊戲 $room_id
+function reset_game() {
+    $('#modal_reset_game').modal('show');
+}
 
-    if (confirm('確定？')) {
-        let message = new Paho.MQTT.Message(JSON.stringify({
-            command: "reset_game",
-            room_id: $room_id,
-        }));
-        message.destinationName = "MOPCON2024HOYO/server";
-        mc.send(message);
-    }
+//
+function submit_reset_game() {
+    $('#id_form_reset_game').submit();
 }
 
 //
@@ -948,70 +1100,29 @@ function check_users_array(arr, $id) {
 }
 
 function refresh() {
-    window.location.reload();
+    window.location.replace(url.origin + url.pathname);
 }
 
-$("#id_form_join").submit(null).validationEngine({
-    onValidationComplete: function (form, status) {
-        if (status === true) {
+function modal_leave() {
+    $('#modal_leave').modal('show');
+}
 
-            let $username = $('#id_join').val();
+function submit_leave() {
+    $('#id_form_leave').submit();
+}
 
-            window.localStorage.username = $username;
+function modal_rule() {
+    $('#modal_rule').modal('show');
+}
 
-            let message = new Paho.MQTT.Message(JSON.stringify({
-                command: "join",
-                user_id: window.localStorage.client_id,
-                username: $username,
-            }));
-            message.destinationName = "MOPCON2024HOYO/server";
-            mc.send(message);
-        }
-    },
-    validationEventTrigger: '',
-    autoHidePrompt: true,
-    autoHideDelay: 2000,
-    promptPosition: "bottomLeft",
-    validateNonVisibleFields: false,
-    prettySelect: true,
-    scroll: false
-});
+function modal_clear_storage() {
+    $('#modal_clear_storage').modal('show');
+}
 
-$("#id_form_create_room").submit(null).validationEngine({
-    onValidationComplete: function (form, status) {
-        if (status === true) {
-
-            $.LoadingOverlay("show", {
-                background: "rgba(100,100,100,0.6)",
-                size: "8",
-                imageAnimation : "3000ms rotate_right",
-                fade : false,
-            });
-
-            let message = new Paho.MQTT.Message(JSON.stringify({
-                command: "create_room",
-                user_id: window.localStorage.client_id,
-                name: $('#id_create_room_name').val(),
-                room_id: window.localStorage.client_id,
-                subject: $('#id_set_subject option:selected').text(),
-                question_number: $('#id_question_number').val(),
-                answer_time: $('#id_answer_time').val(),
-            }));
-            message.destinationName = "MOPCON2024HOYO/server";
-            mc.send(message);
-
-            $(document).scrollTop(0);
-
-        }
-    },
-    validationEventTrigger: '',
-    autoHidePrompt: true,
-    autoHideDelay: 2000,
-    promptPosition: "bottomLeft",
-    validateNonVisibleFields: false,
-    prettySelect: true,
-    scroll: false
-});
+//
+function submit_clear_storage() {
+    $('#id_form_clear_storage').submit();
+}
 
 // ------------------------------------------------------------------------
 // 選單
@@ -1076,5 +1187,133 @@ $(function () {
             $('#id_message').html('<div class="mt-5 text-center"><div>主機連線失敗！</div><div class="mt-3"><a href="javascript:void(0)" onclick="window.location.reload()">重新整理</a></div></div>');
         }
     }, 8000);
+
+    $("#id_form_join").submit(null).validationEngine({
+        onValidationComplete: function (form, status) {
+            if (status === true) {
+
+                let $username = $('#id_join').val();
+
+                window.localStorage.username = $username;
+
+                let message = new Paho.MQTT.Message(JSON.stringify({
+                    command: "join",
+                    user_id: window.localStorage.client_id,
+                    username: $username,
+                }));
+                message.destinationName = "MOPCON2024HOYO/server";
+                mc.send(message);
+            }
+        },
+        validationEventTrigger: '',
+        autoHidePrompt: true,
+        autoHideDelay: 2000,
+        promptPosition: "bottomLeft",
+        validateNonVisibleFields: false,
+        prettySelect: true,
+        scroll: false
+    });
+
+    $("#id_form_create_room").submit(null).validationEngine({
+        onValidationComplete: function (form, status) {
+            if (status === true) {
+
+                $.LoadingOverlay("show", {
+                    background: "rgba(100,100,100,0.6)",
+                    size: "8",
+                    imageAnimation : "3000ms rotate_right",
+                    fade : false,
+                });
+
+                let message = new Paho.MQTT.Message(JSON.stringify({
+                    command: "create_room",
+                    user_id: window.localStorage.client_id,
+                    name: $('#id_create_room_name').val(),
+                    subject: $('#id_set_subject option:selected').text(),
+                    question_number: $('#id_question_number').val(),
+                    answer_time: $('#id_answer_time').val(),
+                    join_number: $('#id_join_number').val(),
+                }));
+                message.destinationName = "MOPCON2024HOYO/server";
+                mc.send(message);
+
+                $(document).scrollTop(0);
+
+            }
+        },
+        validationEventTrigger: '',
+        autoHidePrompt: true,
+        autoHideDelay: 2000,
+        promptPosition: "bottomLeft",
+        validateNonVisibleFields: false,
+        prettySelect: true,
+        scroll: false
+    });
+
+    //
+    $("#id_form_leave").submit(null).validationEngine({
+        onValidationComplete: function (form, status) {
+            if (status === true) {
+                let message = new Paho.MQTT.Message(JSON.stringify({
+                    command: "player_leave",
+                    user_id: window.localStorage.client_id,
+                }));
+                message.destinationName = "MOPCON2024HOYO/server";
+                mc.send(message);
+            }
+        },
+        validationEventTrigger: '',
+        autoHidePrompt: true,
+        autoHideDelay: 2000,
+        promptPosition: "bottomLeft",
+        validateNonVisibleFields: false,
+        prettySelect: true,
+        scroll: false
+    });
+
+    //
+    $("#id_form_reset_game").submit(null).validationEngine({
+        onValidationComplete: function (form, status) {
+            if (status === true) {
+                let message = new Paho.MQTT.Message(JSON.stringify({
+                    command: "reset_game",
+                    user_id: window.localStorage.client_id,
+                }));
+                message.destinationName = "MOPCON2024HOYO/server";
+                mc.send(message);
+            }
+        },
+        validationEventTrigger: '',
+        autoHidePrompt: true,
+        autoHideDelay: 2000,
+        promptPosition: "bottomLeft",
+        validateNonVisibleFields: false,
+        prettySelect: true,
+        scroll: false
+    });
+
+    //
+    $("#id_form_clear_storage").submit(null).validationEngine({
+        onValidationComplete: function (form, status) {
+            if (status === true) {
+                let message = new Paho.MQTT.Message(JSON.stringify({
+                    command: "reset_game",
+                    user_id: window.localStorage.client_id,
+                }));
+                message.destinationName = "MOPCON2024HOYO/server";
+                mc.send(message);
+
+                window.localStorage.clear();
+                window.location.reload();
+            }
+        },
+        validationEventTrigger: '',
+        autoHidePrompt: true,
+        autoHideDelay: 2000,
+        promptPosition: "bottomLeft",
+        validateNonVisibleFields: false,
+        prettySelect: true,
+        scroll: false
+    });
 
 });

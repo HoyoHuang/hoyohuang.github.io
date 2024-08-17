@@ -1,0 +1,378 @@
+
+/* 取消下拉更新 */
+/* prevent pull-to-refresh for Safari 16+ */
+@media screen and (pointer: coarse) {
+    @supports (-webkit-backdrop-filter: blur(1px)) and (overscroll-behavior-y: none)  {
+        html {
+            min-height: 100.3%;
+            overscroll-behavior-y: none;
+        }
+    }
+}
+/* prevent pull-to-refresh for Safari 9~15 */
+@media screen and (pointer: coarse) {
+    @supports (-webkit-backdrop-filter: blur(1px)) and (not (overscroll-behavior-y: none))  {
+        html {
+            height: 100%;
+            overflow: hidden;
+        }
+        body {
+            margin: 0;
+            max-height: 100%; /* or `height: calc(100% - 16px);` if body has default margin */
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        /* in this case to disable pinch-zoom, set `touch-action: pan-x pan-y;` on `body` instead of `html` */
+    }
+}
+/* prevent pull-to-refresh for Chrome 63+ */
+body{
+    overscroll-behavior-y: none;
+}
+
+.btn { font-size: 16px; }
+
+html, body { height: 100%; }
+p{ margin-bottom: 0 !important; }
+
+.single-ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 關閉手機下拉重新整理 */
+/* https://usefulangle.com/post/278/html-disable-pull-to-refresh-with-css */
+body {
+    overscroll-behavior: contain;
+}
+
+.group {
+    border: 1px solid #aaa;
+    margin: 6px 0;
+    padding: 8px;
+    cursor: pointer;
+    background-color: #fff;
+}
+
+.room {
+    border: 1px solid #aaa;
+    margin: 0 0 16px;
+    padding: 8px;
+    box-shadow: 3px 4px 4px #aaa;
+    cursor: pointer;
+    background-color: #fff;
+}
+
+.room_people {
+    height: 4rem;
+    box-shadow: inset 0 0 8px 6px #5dcfbf;
+    margin: 0 0.5rem 0.5rem 0;
+    text-align: center;
+    line-height: 4rem;
+    border-radius: 4px;
+    width: 100%;
+    /*padding: 8px 0;*/
+}
+.user_list_user_name{
+    padding: 6px 10px;
+    background-color: #1e9586;
+    color: #fff;
+    margin-right: 1rem;
+    border-radius: 8px;
+}
+.ui-slider {
+    width: 90% !important;
+}
+
+.ui-slider-handle {
+    width: 2rem !important;
+    height: 1.5rem !important;
+    text-align: center;
+}
+
+.ui-slider-horizontal .ui-slider-handle {
+    top: -0.4em !important;
+}
+
+.vertical_center > div {
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    /*padding: 1rem;*/
+    /*box-shadow: 6px 6px 12px;*/
+}
+
+.vertical_center > div > div {
+    width: 360px;
+}
+
+/*@media (min-width: 576px) {*/
+/*    .container, .container-sm {*/
+/*        !*max-width: 100%;*!*/
+/*    }*/
+/*}*/
+
+@media (max-width: 460px) {
+    .vertical_center > div > div {
+        /*width: 100%;*/
+        /*margin-left: 0;*/
+    }
+    .vertical_center > div {
+        /*width: 85%;*/
+    }
+}
+
+.area{
+    background-color: #ffffff00;
+    /*height: 100vh;*/
+    padding-bottom: 2rem;
+}
+
+#area_join {
+    background-image: radial-gradient(circle at 67% 83%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 1%, transparent 1%, transparent 5%, transparent 5%, transparent 100%), radial-gradient(circle at 24% 80%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 27%, transparent 27%, transparent 63%, transparent 63%, transparent 100%), radial-gradient(circle at 23% 5%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 26%, transparent 26%, transparent 82%, transparent 82%, transparent 100%), radial-gradient(circle at 21% 11%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 35%, transparent 35%, transparent 45%, transparent 45%, transparent 100%), radial-gradient(circle at 10% 11%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 21%, transparent 21%, transparent 81%, transparent 81%, transparent 100%), radial-gradient(circle at 19% 61%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 20%, transparent 20%, transparent 61%, transparent 61%, transparent 100%), radial-gradient(circle at 13% 77%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 63%, transparent 63%, transparent 72%, transparent 72%, transparent 100%), radial-gradient(circle at 30% 93%, hsla(317, 0%, 96%, 0.05) 0%, hsla(317, 0%, 96%, 0.05) 33%, transparent 33%, transparent 82%, transparent 82%, transparent 100%), linear-gradient(90deg, rgb(22, 176, 207), rgb(103, 7, 215));
+    height: 100%;
+    width: 100%;
+}
+
+/*  */
+#area_room_{
+    background-image: linear-gradient(315deg, rgba(254, 246, 210, 0.53) 0%, rgba(254, 246, 210, 0.53) 14.286%, rgba(221, 240, 216, 0.53) 14.286%, rgba(221, 240, 216, 0.53) 28.572%, rgba(188, 233, 223, 0.53) 28.572%, rgba(188, 233, 223, 0.53) 42.858%, rgba(156, 227, 229, 0.53) 42.858%, rgba(156, 227, 229, 0.53) 57.144%, rgba(123, 220, 235, 0.53) 57.144%, rgba(123, 220, 235, 0.53) 71.42999999999999%, rgba(90, 214, 242, 0.53) 71.43%, rgba(90, 214, 242, 0.53) 85.71600000000001%, rgba(57, 207, 248, 0.53) 85.716%, rgba(57, 207, 248, 0.53) 100.002%), linear-gradient(405deg, rgb(246, 99, 200) 0%, rgb(246, 99, 200) 12.5%, rgb(223, 98, 196) 12.5%, rgb(223, 98, 196) 25%, rgb(199, 97, 192) 25%, rgb(199, 97, 192) 37.5%, rgb(176, 96, 188) 37.5%, rgb(176, 96, 188) 50%, rgb(152, 95, 184) 50%, rgb(152, 95, 184) 62.5%, rgb(129, 94, 180) 62.5%, rgb(129, 94, 180) 75%, rgb(105, 93, 176) 75%, rgb(105, 93, 176) 87.5%, rgb(82, 92, 172) 87.5%, rgb(82, 92, 172) 100%);
+}
+
+#area_room {
+    /*min-height: 100vh;*/
+}
+
+#id_cards {
+    min-height: 100vh;
+    background-image: linear-gradient(45deg, rgb(27, 92, 18) 0%, rgb(27, 92, 18) 2%, rgb(28, 82, 45) 2%, rgb(28, 82, 45) 23%, rgb(29, 72, 72) 23%, rgb(29, 72, 72) 34%, rgb(30, 61, 98) 34%, rgb(30, 61, 98) 96%, rgb(31, 51, 125) 96%, rgb(31, 51, 125) 100%), linear-gradient(0deg, rgb(27, 92, 18) 0%, rgb(27, 92, 18) 2%, rgb(28, 82, 45) 2%, rgb(28, 82, 45) 23%, rgb(29, 72, 72) 23%, rgb(29, 72, 72) 34%, rgb(30, 61, 98) 34%, rgb(30, 61, 98) 96%, rgb(31, 51, 125) 96%, rgb(31, 51, 125) 100%), linear-gradient(135deg, rgb(27, 92, 18) 0%, rgb(27, 92, 18) 2%, rgb(28, 82, 45) 2%, rgb(28, 82, 45) 23%, rgb(29, 72, 72) 23%, rgb(29, 72, 72) 34%, rgb(30, 61, 98) 34%, rgb(30, 61, 98) 96%, rgb(31, 51, 125) 96%, rgb(31, 51, 125) 100%), linear-gradient(90deg, rgb(186, 19, 165), rgb(19, 125, 241));
+    background-blend-mode: overlay, overlay, overlay, normal;
+}
+
+.stage_background {
+    background-image: linear-gradient(to right bottom, #ebdcff, #cfeaff, #bef6ff, #c8fef0, #e8ffdc);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.question_count{
+    display: inline-block;
+    margin: 0 0.25rem;
+    border: 1px solid #eee;
+    width: 2rem;
+    height: 2rem;
+    line-height: 30px;
+    border-radius: 2rem;
+    font-size: 1.25rem;
+    box-shadow: 2px 2px 8px;
+}
+.question_count.active{
+    border: none;
+    background-color: #fe7474;
+    color: #ffffff;
+}
+.question_count:hover{
+    cursor: pointer;
+}
+
+/* 用来实现动画的keyframes;  从0度旋转到360度 */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.option {
+    float: left;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #cccccc;
+    margin-right: 10px;
+}
+
+.active {
+    border: 2px solid black;
+}
+
+.lw {
+    text-align: center;
+    vertical-align: middle;
+}
+
+img.output {
+    border: 1px solid green;
+}
+
+.box{
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #ddd;
+    padding: 2px 2px;
+    font-size: 20px;
+    border-radius: 24px;
+    text-align: center;
+    box-shadow: 2px 2px 2px #666;
+    margin: 2px 3px;
+    cursor: pointer;
+    color: #269d8d;
+    font-weight: bold;
+}
+
+.box.disabled{
+    color: #fff;
+    background-color: #eee !important;
+}
+
+.correct_answer{
+    background-color: #d7ff90;
+}
+
+/* 選單 */
+ body.offcanvas-active {
+     overflow: hidden;
+ }
+
+.offcanvas-header {
+    display: none;
+}
+
+.screen-darken {
+    height: 100%;
+    width: 0;
+    z-index: 30;
+    position: fixed;
+    top: 0;
+    right: 0;
+    opacity: 0;
+    visibility: hidden;
+    background-color: rgba(34, 34, 34, 0.6);
+    transition: opacity .1s linear, visibility 0.1s, width 2s ease-in;
+}
+
+.screen-darken.active {
+    z-index: 10;
+    transition: opacity .1s ease, width 0s;
+    opacity: 1;
+    width: 100%;
+    visibility: visible;
+}
+
+@media all and (max-width: 1399px) {
+    .offcanvas-header {
+        display: block;
+    }
+
+    .mobile-offcanvas {
+        visibility: hidden;
+        transform: translateX(-100%);
+        border-radius: 0;
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        z-index: 1200;
+        width: 80%;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        transition: visibility .1s ease-in-out, transform .1s ease-in-out;
+    }
+
+    .mobile-offcanvas.show {
+        visibility: visible;
+        transform: translateX(0);
+    }
+
+    .mobile-offcanvas .container, .mobile-offcanvas .container-fluid {
+        display: block;
+    }
+}
+
+.nav-item > a {
+    color: #000 !important;
+}
+
+/* 選單連結文字 */
+.link_text {
+    border-bottom: 1px #fff solid;
+    padding-bottom: 1px;
+}
+
+.nav-link {
+    background-color: #fff;
+    padding: 6px 8px;
+    border-radius: 6px;
+    box-shadow: 2px 2px 2px, 2px 2px 2px, 2px 2px 2px, 2px 2px 2px, 2px 2px 2px;
+}
+
+/* game */
+@media (min-width: 576px) {
+    .container_mobile {
+        max-width: 540px;
+        width: 100%;
+        padding-right: calc(var(--bs-gutter-x) * .5);
+        padding-left: calc(var(--bs-gutter-x) * .5);
+        margin-right: auto;
+        margin-left: auto;
+    }
+}
+.box{
+    display: inline-block;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 45px;
+}
+.table_bingo tr{
+    border: none;
+}
+.table_bingo td{
+    cursor: pointer;
+    box-shadow: 1px 1px 3px #999;
+}
+.table_9 td{
+    font-size: 2rem;
+    width: 80px;
+    height: 80px;
+    line-height: 67px;
+}
+.table_25 td{
+    font-size: 1.5rem;
+    width: 60px;
+    height: 60px;
+    line-height: 47px;
+}
+.table_49 td{
+    font-size: 1rem;
+    width: 44px;
+    height: 44px;
+    line-height: 28px;
+}
+td.active{
+    background-color: #a7d6f1;
+    border-radius: 100%;
+}
+.avatar {
+    background-color: #f9b547 !important;
+}
+.avatar:last-child {
+    background-color:#ff0000 !important;
+}
+
+#id_qrcode{
+    text-align: center;
+}
+#id_qrcode img{
+    display: inline-block !important;
+}
+.show_answer label{
+    font-size: 1.25rem;
+}
